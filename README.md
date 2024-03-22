@@ -1,5 +1,8 @@
 # Batflight
 
+**March 15**
+
+
 Our project will examine captive big brown bat flight, and specifically whether non-flight exercise has a meaningful effect on their flight ability/willingness. This question comes from my (Renata's) observations that the captive big brown bats in our colony do not/cannot fly well. However, they do crawl, which I will exploit to exercise a group of bats and compare their flight ability/willingness to a non-exercise group. 
 
 For flight ability, we are interested in 1) how long a bat sustains flight, and 2) how many laps a bat completes. For flight willingness (i.e. how willing a bat is to begin flight), we are interested in 1) how long it takes for the bat to take off from the experimenter's hand, and 2) how many "shakes" it takes for the bat to take off. These variables (which I am considering to signify flight ability/willingness) will be compared between the exercise and non-exercise groups to determine whether crawling exercise has a meaningful effect on flight.
@@ -11,3 +14,8 @@ This is something I am planning to do in the near future, so we will be using si
 Based on Ian's lecture, we can simulate data in R by setting sample_size, mean, and st_dev for the variables, then using the rnorm function. We will have to work out how to correctly do this for the two bat groups, measured every **three days** over the **two month** peiod.
 
 Flight time, time to take off, and mass are continuous variables, while number of laps and number of shakes are discrete variables. Ben's (very helpful) comment on Teams suggests that the continuous variables will likely be either log-Normal or Gamma, while the discrete variables will likely be negative binomial models. This is how we will model our simulated data. Ben also mentioned that because this is a repeated measures design, we can test other interesting things, such as: does bat willingness correspond with bat flight, do individual bats have good vs. bad flight days? We will need to decide how to accurately test these. 
+
+**March 22**
+
+
+Originally, I planned to include number of laps flown as a measure of flight ability. I spoke with a colleague who pointed out that some bats will fly in laps, while others might just fly back and forth. Overall, flying back and forth involves less movement than flying in laps, so I've realized that this probably isn't a reliable measure. We could possbily look at distance flown, but this seems much more challenging. I think we should just stick to measuring flight time as the measure for flight ability. 
