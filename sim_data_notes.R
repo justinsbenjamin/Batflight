@@ -13,3 +13,20 @@
   #if simulating gaussian dist, also need residual variance. 
   #log of std dev of residual variance, 
   #if perfectly straihgt, would just be uncertainty of scale. but actually bigger than that (eg they just took a drink)
+
+correlation <- (-0.75) / (sqrt(1 + (-0.75^2)))
+correlation
+
+mass_data <- simulate_new( ~ 1 + treatment #(remove bc if balanced = 0) + day + (1 + day | batID), #leave out main effect of treatment with 1 + day + treatment:day (additional weight loss in exercise)
+                           nsim = 1,
+                           family = "gaussian",
+                           newdata = dat,
+                           newparams = list(
+                             beta = c(30, (-5/60), 2),   #RS: I don't think I understand these. model we're specifying says on day 0 theres avg weight of ind in the unexercised condition (intercept), on day 0 there's a diff btw exercised and non-exercise (but this isn't actually likely if randomized assignment or did paires by taking two fattest and flipping coin to decide group, etc is even smaller), unexercised as baseline condition, 
+                             #first is mass at time 0, second is loss per day in control, third is difference in loss per day btw two groups
+                             #could start by setting third to 0
+                             #set third as -1/60 then exercise lose one more gram relative to control
+                             theta = c(log(c(5, (1/60))), correlation), 
+                             betad = log(3) #st dev of mass at day 0. 3 is plus or minus 6 grams 
+                           )
+)
