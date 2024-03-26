@@ -23,17 +23,17 @@ bat_data <- full_join(dat1, tdat, by="batID")
 
 ## JD: Think about using treatment*day instead; what are the units of that β??
   #RS: ¯\_(ツ)_/¯
-correlation <- (-0.75) / (sqrt(1 + (-0.75^2)))
-correlation
+correlation <- (-0.99) / (sqrt(1 + (-0.99^2)))
+#correlation
 
 mass_data <- simulate_new( ~ 1  + day + treatment:day, 
                    nsim = 1,
                    family = "gaussian",
-                   newdata = dat,
+                   newdata = bat_data,
                    newparams = list(
-                     beta = c(30, (-5/60), 0),  #I changed this to 0, just to start out?
-                     theta = c(log(c(5, (1/60))), correlation), 
-                     betad = log(5) #I changed this to 5, I think 10 makes sense?
+                     beta = c(30, (-5/60), 0.2),  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy 
+                     theta = c(log(c(5, (0.5/60))), correlation), 
+                     betad = log(1) #making this smaller makes variation smaller
                    )
 )
 
