@@ -31,7 +31,7 @@ mass_data <- simulate_new( ~ 1  + day + treatment:day,
                    family = "gaussian",
                    newdata = bat_data,
                    newparams = list(
-                     beta = c(30, (-5/60), -0.05),  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy 
+                     beta = c(30, (-5/60), -0.04),  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy 
                      theta = c(log(c(5, (0.5/60))), correlation), 
                      betad = log(1) #making this smaller makes variation smaller
                    )
