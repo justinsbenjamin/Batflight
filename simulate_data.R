@@ -23,7 +23,7 @@ bat_data <- full_join(dat1, tdat, by="batID")
 
 ## JD: Think about using treatment*day instead; what are the units of that β??
   #RS: ¯\_(ツ)_/¯
-correlation <- (-0.99) / (sqrt(1 + (-0.99^2)))
+correlation <- (-0.75) / (sqrt(1 + (-0.75^2)))
 #correlation
 
 mass_data <- simulate_new( ~ 1  + day + treatment:day, 
