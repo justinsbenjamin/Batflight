@@ -41,3 +41,20 @@ mass_data <- simulate_new( ~ 1 + treatment #(remove bc if balanced = 0) + day + 
                              betad = log(3) #st dev of mass at day 0. 3 is plus or minus 6 grams 
                            )
 )
+
+
+#Thursday's class
+#neg binomial for the project. can say if bigger than 18, just set as 18
+  #in the future decide if neg binomial or ordinal analysis better
+
+#neg binomial simulation and analysis for number of shakes
+#experiment with diff diagnostic plots, dhamrma or something
+#for real data, start by looking at diagnostic plots. if they don't look good like simulated ones do, think about how to analyze differently.
+
+#pick mean for each observation, using R n binomial (to pick neg binomial deviate). can probably use built in sim function to sim means. 
+  #give size (0 to infinity, opp of how much variation, when goes to infinity, neg binomial is poisson, as goes to o, very high variability), mu is mean (use instead of probability)
+  ## trials, size?, mu is mean
+  #size is how much variability there is large size is less variability, small is more. 
+
+hist(rnbinom(100, size=100, mu=4))
+
