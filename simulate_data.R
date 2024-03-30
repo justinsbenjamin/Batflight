@@ -89,7 +89,7 @@ summary(cis |> mutate_if(is.character, as.factor))
 treatmentTrue <- 10 #what is this
 
 print(cis
-      |> filter(vname=="treatmentexercise")
+      |> filter(vname=="day:treatmentexercise")
       |> summarize(
         toohigh=mean(low>treatmentTrue)
         , toolow=mean(high<treatmentTrue)
@@ -97,9 +97,10 @@ print(cis
         , power = mean(low>0)
       )
 )
-#I'm guessing this isn't just supposed to give me NaN, so something's wrong
-
-
+#uh
+# toohigh toolow    ci_width power
+# 1       0      1 0.008821286     0
+#huh?
 
 
 #For original sim data:
