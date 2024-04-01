@@ -111,7 +111,7 @@ system.time(
                  , .progress = interactive()
                  , simfun=sim, fitfun=fit
                  , n_per_group = 15, days=seq(3, 60, by=3)
-                 , β0=30, β_treat=(-5/60), β_day=(-0.04)
+                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
                    )
 )
