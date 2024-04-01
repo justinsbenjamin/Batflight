@@ -4,17 +4,13 @@ library(purrr)
 library(broom.mixed)
 library(tidyverse)
 
-#This is the example from lecture----
+#example from lecture, but for mass----
 set.seed(101)
-
 
 nGroup=15; days=seq(3, 60, by=3)
 β0=30; β_treat=(-5/60); β_day=(-0.04)
-sdint=5; sdslope=(0.5/60); corr=((-0.75) / (sqrt(1 + (-0.75^2)))); sdres=1
+sdint=5; sdslope=(1/60); corr=((-0.75) / (sqrt(1 + (-0.75^2)))); sdres=5
 nBats <- nGroup*2
-###These aren't what we decided on with Ben
-##I played around with them because the plot looked weird
-#Change back to original and compare once we've figured this out
 
 
 ## JD: Think about using treatment*day instead; what are the units of that β??
@@ -39,16 +35,16 @@ sim <- function(nGroup, days, β0, β_treat, β_day
                    family = "gaussian",
                    newdata = bat_data,
                    newparams = list(
-                     beta = c(β0, β_treat, β_day),  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy 
-                     theta = c(log(c(sdint, sdslope)), corr), 
-                     betad = log(sdres) #making this smaller makes variation smaller
+                     beta = c(β0, β_treat, β_day)  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy 
+                    , theta = c(log(sdint), log(sdslope), corr)
+                    , betad = log(sdres) #making this smaller makes variation smaller
       )
     )
 
      bat_data$mass <- mass_data[[1]]
      return(bat_data)
 }
-
+    
 
 fit <- function(bat_data){
   return(glmmTMB(mass ~  1  + day + treatment:day
@@ -69,18 +65,20 @@ simCIs <- function(simfun, fitfun, ...){
 }
 
   
-nReps <- 100 #make smaller for now
+nReps <- 100 #made smaller for now
 
 print(simCIs(simfun=sim, fitfun=fit
              , nGroup = 15, days=seq(3, 60, by=3)
              , β0=30, β_treat=(-5/60), β_day=(-0.04)
-             , sdint=5, sdslope=(0.5/60), corr=((-0.75) / (sqrt(1 + (-0.75^2)))), sdres=1
+             , sdint=5, sdslope=(1/60), corr=((-0.75) / (sqrt(1 + (-0.75^2)))), sdres=5
 ))
+
+
 
 cis <- map_dfr(1:nReps, simCIs, .id="sim", simfun=sim, fitfun=fit
                , nGroup = 15, days=seq(3, 60, by=3)
                , β0=30, β_treat=(-5/60), β_day=(-0.04)
-               , sdint=5, sdslope=(0.5/60), corr=((-0.75) / (sqrt(1 + (-0.75^2)))), sdres=1
+               , sdint=5, sdslope=(1/60), corr=((-0.75) / (sqrt(1 + (-0.75^2)))), sdres=5
 )
 
 summary(cis)
@@ -97,17 +95,20 @@ print(cis
         , power = mean(low>0)
       )
 )
-#uh
-# toohigh toolow    ci_width power
-# 1       0      1 0.008821286     0
-#huh?
+
+#ahhh
+# Warning messages:
+#   1: In make_pars(c(beta = 1, beta = 1, beta = 1, betad = 0 ... :
+#                       unmatched parameter names: theta
+#  
+
 
 
 #For original sim data:
 # ggplot(bat_data, aes(x = day, y = mass, colour = batID))  +
 #       geom_point() +
 #       geom_line()
-# #LOL WHAT IS THAT 
+# # #LOL WHAT IS THAT 
 
 
 
