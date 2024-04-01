@@ -1,10 +1,11 @@
 ---
 title: "Bat Flight Presentation"
-subtitle: "Quantitative Methods in Ecology and Evolution"
 author: "Justin Benjamin & Renata Soljmosi"
 date: "2024-04-08"
 output:
+  ioslides_presentation: default
   beamer_presentation: default
+subtitle: Quantitative Methods in Ecology and Evolution
 ---
 
 ```{r setup, include=FALSE}
@@ -13,13 +14,15 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Introduction
 
--   Little brown bats (*Myotis lucifugus*)
--   Held in captivity at McMaster
--   Previous work found they couldn't/not willing to fly so this is a simulation of a new experiment to adress that.
+-   Big brown bats (*Eptesicus fuscus*)
+-   Held in captivity at McMaster University
+-   Previous work found they weren't willing/able to fly 
+-   Planning a new study to examine whether exercise can help captive big browns fly/make them more willing to 
 
 ## Introduction continued
 
-- Introduction continued here
+-   As this is an upcoming project, there are no data yet
+-   Our project aims to simulate and analyze data 
 
 ## Hypothesis and predictions
 
@@ -29,10 +32,10 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Study design
 
--   30 bats measured for 60 days
--   Mass before and during
--   Treatment of exercise or no exercise as a control
--   Measure flight time
+-   30 bats measured for 60 consecutive days
+-   Daily treatment of exercise or no exercise (control)
+-   Record mass before and during 60 days
+-   Flight tests every 3 days for every bat: Measure flight willingness as number of "shakes" and flight ability as flight time 
 
 ## Simulation process
 
