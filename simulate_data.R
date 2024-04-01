@@ -25,11 +25,10 @@ sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=5
 nBats <- nGroup*2
 
 
-## JD: Think about using treatment*day instead; what are the units of that β??
-## RS: ¯\_(ツ)_/¯
 ## BMB: I think these comments may be getting out of date. 1 + day + treatment:day
 ##      should be good as long as we are happy to assume no difference in weight on day 0
 ##      (which is reasonable if you are assigning bats to treatments randomly)
+
 ## JD: These ...'s aren't the best practice; should figure out more about map
 ## BMB: get JD to explain this comment, I don't understand it out of context
 
@@ -51,7 +50,7 @@ sim <- function(nGroup, days, β0, β_day, β_daytreat
                    family = "gaussian",
                    newdata = bat_data,
                    newparams = list(
-                       beta = c(β0, β_day, β_daytreat)  #when I change this from 0, the treatment group increases in mass? when it's set at 0, it also looks crazy
+                       beta = c(β0, β_day, β_daytreat) 
                      , theta = c(log(sdint), log(sdslope), corr)
                      , betad = log(sdres) #making this smaller makes variation smaller
       )
@@ -73,8 +72,8 @@ simCIs <- function(simfun, fitfun, ...){
   dat <- simfun(...)
   fit <- fitfun(dat)
   tt <- (tidy(fit, effects = "fixed", conf.int = TRUE)
-      |> select(term, est = estimate, lwr = conf.low, upr = conf.high)
-      |> mutate(across(where(is.character), factor))
+      %>% select(term, est = estimate, lwr = conf.low, upr = conf.high)
+      %>% mutate(across(where(is.character), factor))
   )
   return(tt)
 }
@@ -102,15 +101,16 @@ summary(cis)
 treatmentTrue <- β_daytreat
 
 print(cis
-      |> filter(vname=="day:treatmentexercise")
-      |> summarize(
-             toohigh=mean(low>treatmentTrue)
-           , toolow=mean(high<treatmentTrue)
-           , ci_width=mean(high-low)
-        , power = mean(low>0)
+      %>% filter(term=="day:treatmentexercise")
+      %>% summarize(
+            toohigh=mean(lwr>treatmentTrue)
+          , toolow=mean(upr<treatmentTrue)
+          , ci_width=mean(upr-lwr)
+          , power = mean(lwr>0)
       )
 )
 
+saveRDS(cis, "bat_mass.RDS")
 
 #For original sim data:
 # ggplot(bat_data, aes(x = day, y = mass, colour = batID))  +
