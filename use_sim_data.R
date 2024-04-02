@@ -1,5 +1,7 @@
 library(tidyverse)
 
+set.seed(101)
+
 #file created by "stimulate_data.R"
 cis <- readRDS("bat_mass_sims.RDS")
 β_daytreat=(-1/60)
