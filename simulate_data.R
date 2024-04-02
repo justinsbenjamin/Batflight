@@ -16,7 +16,7 @@ n_per_group=15; days=seq(3, 60, by=3)
 n_groups <- 2
 
 ## BMB: this matches what we talked about better
-β0=30; β_day=(-5/60); β_daytreat=(-1/60)
+β0=30; β_day=(-3/60); β_daytreat=(-1/60)
 
 form0 <- ~ 1 + day + treatment:day + (day | batID)
 form1 <- mass ~ 1 + day + treatment:day + (day | batID)
@@ -25,10 +25,6 @@ corr_trans <- function(rho) rho/(sqrt(1+rho^2))
 sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=1
 n_bats <- n_per_group*n_groups
 
-
-## BMB: I think these comments may be getting out of date. 1 + day + treatment:day
-##      should be good as long as we are happy to assume no difference in weight on day 0
-##      (which is reasonable if you are assigning bats to treatments randomly)
 
 ## JD: These ...'s aren't the best practice; should figure out more about map
 ## BMB: get JD to explain this comment, I don't understand it out of context
@@ -93,7 +89,6 @@ print(simCIs(simfun=sim, fitfun=fit
            , n_per_group = 15, days=seq(3, 60, by=3)
              ## reuse values from above
            , β0=β0, β_day=β_day, β_daytreat=β_daytreat
-
            , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
 ))
 
@@ -111,7 +106,7 @@ system.time(
                  , .progress = interactive()
                  , simfun=sim, fitfun=fit
                  , n_per_group = 15, days=seq(3, 60, by=3)
-                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat#these parameters are fit into sim with ...
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
                    )
 )
@@ -120,29 +115,6 @@ system.time(
 
 saveRDS(cis, "bat_mass_sims.RDS")
 
-## BMB: the rest of the code should go in a separate file so we can
-## split the slow and less-slow parts (i.e. cis <- readRDS("bat_mass_sims.RDS")
-summary(cis)
-## BMB: *simulated* (true) value of the parameter we're testing
-treatmentTrue <- β_daytreat
-dt_cis <- (cis
-      |> filter(term=="day:treatmentexercise")
-    |> drop_na()
-)
-
-dt_cis |> summarize(
-            toohigh=mean(lwr>treatmentTrue)
-          , toolow=mean(upr<treatmentTrue)
-          , ci_width=mean(upr-lwr)
-          , power = mean(lwr>0)
-          )
-
-
-#For original sim data:
-# ggplot(bat_data, aes(x = day, y = mass, colour = batID))  +
-#       geom_point() +
-#       geom_line()
-# # #LOL WHAT IS THAT 
 
 
 
