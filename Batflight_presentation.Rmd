@@ -1,7 +1,7 @@
 ---
-title: "Bat Flight Presentation"
+title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
-date: "2024-04-08"
+date: "April 8th 2024"
 output:
   ioslides_presentation: default
   beamer_presentation: default
@@ -14,55 +14,61 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Introduction
 
--   Big brown bats (*Eptesicus fuscus*)
--   Held in captivity at McMaster University
--   Previous work found they weren't willing/able to fly 
--   Planning a new study to examine whether exercise can help captive big browns fly/make them more willing to 
-
-## Introduction continued
-
--   As this is an upcoming project, there are no data yet
--   Our project aims to simulate and analyze data 
-
-## Hypothesis and predictions
-
-- Hypothesis: Keeping bats active in captivity ensures better flight ability
-- Predictions: Exercised bats will be more willing to fly and have longer flight time than non-exercised bats.
-
+- Big brown bats (*Eptesicus fuscus*)
+- Held in captivity at McMaster 
+- Previously we found they weren't willing/able to fly in captivity
+- Planning a new study to examine whether exercise via treadmill can help captive
+bats become them more willing and able to fly
+- Don't have data yet as this is an upcoming study
+- Our project aims to simulate and analyze data 
 
 ## Study design
 
--   30 bats measured for 60 consecutive days
--   Daily treatment of exercise or no exercise (control)
--   Record mass before and during 60 days
--   Flight tests every 3 days for every bat: Measure flight willingness as number of "shakes" and flight ability as flight time 
+- Repeated measures study with 30 bats measured every 3 days over 60 days
+
+- Predictor variables
+    - Mass (grams)
+    - Treatment (exercise or no exercise)
+    - Sex (Most are females though)
+
+- Response variables
+    - Flight time
+    - Number of "shakes" could be both a predictor for flight time and a response variable
+    
+## Hypothesis and predictions
+
+- Hypothesis: Keeping bats active in captivity ensures better flight ability
+- Predictions: 
+    - Exercised bats will need less shakes to fly than non-exercised bats
+    - Exercised bats will have longer flight times than non-exercised bats
 
 ## Simulation process
 
--   Add proper code here
+- Add proper code here
 ```{r cars, echo = TRUE}
 summary(cars)
 ```
 
+## Simulation process continued
+
 ## Preliminary results
 
--   Add proper plot here
+- Add proper plot here
 ```{r pressure}
 plot(pressure)
 ```
 
-
 ## Preliminary results continued
 
--   Add plot here
+- Add plot here
 
 
-## Preliminary results cont
+## Preliminary results continued
 
 
 ## Next steps
 
--   Running the simulation more times
--   Power analysis
+- Running the simulation more times
+- Simulation with shakes as count data (Negative binomial or Poisson models)
 
 ## Questions?
