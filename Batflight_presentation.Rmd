@@ -137,6 +137,8 @@ plot_sim <- function(flight_data) {
 ```{r, echo=TRUE}
 plot_sim(s1)
 ```
+
+
 ## Simulation example continued
 #### Wrap in a function to repeat many times
 ```{r, echo=TRUE}
@@ -203,24 +205,88 @@ dt_flight %>% summarize(
   , power = mean(lwr>0) 
 )
 ```
-## Preliminary results continued
 
-```{r}
-cis <- readRDS("bat_mass_sims.RDS")
-β_daytreat=(-1/60)
 
-summary(cis)
+
+## Visualize the data
+
+```{r, echo = FALSE}
+dt_flight <- (dt_flight
+    |> mutate(across(sim_flight, ~ reorder(factor(.), est)))
+)
+no_x_axis <- theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
+    geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+    ## blank x axis
+    no_x_axis +
+    ## reference line for coverage (do CIs include true value?)
+    geom_hline(yintercept = β_daytreat,
+               colour = "red", linewidth = 2) +
+    ## reference line for power (do CIs include 0?)
+    geom_hline(yintercept = 0,
+               colour = "blue", linewidth = 2) + 
+    expand_limits(x=0)
+print(gg1)
+
 ```
 
-## Preliminary results continued
-
-```{r}
-
+###Simulated mass data
+Very similar procedure because mass is also a continuous response variable
+```{r, echo = TRUE}
+form1 <- mass ~ 1 + day + treatment:day + (day | batID)
 ```
+
+```{r, echo = FALSE}
+mass <- readRDS("bat_mass_sims.RDS")
+β_daytreat_mass=(-1.5/60)
+treatmentTrue_mass <- β_daytreat_mass
+summary(mass)
+```
+###Simulated mass data
+```{r, echo = FALSE}
+dt_mass <- (mass
+           %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
+           %>% drop_na() #removes rows missing values
+)
+dt_mass %>% summarize(
+                toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
+              , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
+              , ci_width=mean(upr-lwr) #mean width of CIs
+              , power = mean(upr<0) #proportion of CIs where the lower bound is greater than zero. We are only interested in “power” to detect the true effect direction
+            )
+```
+
+###Simulated mass data
+```{r, echo = FALSE}
+dt_mass <- (dt_mass
+    |> mutate(across(sim, ~ reorder(factor(.), est)))
+)
+no_x_axis <- theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+gg2 <- ggplot(dt_mass, aes(sim, est)) +
+    geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+    ## blank x axis
+    no_x_axis +
+    ## reference line for coverage (do CIs include true value?)
+    geom_hline(yintercept = β_daytreat_mass,
+               colour = "red", linewidth = 2) +
+    ## reference line for power (do CIs include 0?)
+    geom_hline(yintercept = 0,
+               colour = "blue", linewidth = 2) + 
+    expand_limits(x=0)
+
+print(gg2)
+```
+
 
 ## Next steps
 
 - Simulation with shakes as count data (Negative binomial or Poisson models)
 - Mass as a predictor variable?
+- Analyses
 
 ## Questions?
