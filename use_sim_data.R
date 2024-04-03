@@ -6,7 +6,10 @@ mass <- readRDS("bat_mass_sims.RDS")
 #file created by "sim_flight_data.R"
 flightTime <- readRDS("bat_flight_sims.RDS")
 
-#mass sim data----
+##mass sim data----
+## BMB: this should probably be retrieved from an earlier stored
+##  value, so we don't risk it getting out of sync
+## (possibly stored in a 'true_val' column?)
 β_daytreat_mass=(-1.5/60)
 
 summary(mass)#In an earlier version there were some NAs for lwr and upr, but seems okay now
@@ -20,11 +23,11 @@ dt_mass <- (mass
 )
 
 dt_mass %>% summarize(
-  toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
-  , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
-  , ci_width=mean(upr-lwr) #mean width of CIs
-  , power = mean(upr<0) #proportion of CIs where the lower bound is greater than zero. We are only interested in “power” to detect the true effect direction
-)
+                toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
+              , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
+              , ci_width=mean(upr-lwr) #mean width of CIs
+              , power = mean(upr<0) #proportion of CIs where the lower bound is greater than zero. We are only interested in “power” to detect the true effect direction
+            )
 
 #flight sim data----
 flightTime <- readRDS("bat_flight_sims.RDS")
