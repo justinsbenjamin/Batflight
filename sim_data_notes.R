@@ -58,3 +58,5 @@ mass_data <- simulate_new( ~ 1 + treatment #(remove bc if balanced = 0) + day + 
 
 hist(rnbinom(100, size=100, mu=4))
 
+#use simulate_new, change family to negative binomial, will be on loglink so have to figure out what parameters mean 
+
