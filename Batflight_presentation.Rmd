@@ -1,9 +1,10 @@
 ---
 title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
-date: "April 8th, 2024 "
+date: "April 4th, 2024"
 output:
   ioslides_presentation: default
+    #css: customCSS_ioslides.css #didn't work
   beamer_presentation: default
 subtitle: Quantitative Methods in Ecology and Evolution
 
@@ -60,7 +61,7 @@ bats become more willing and able to fly
 - Wrap in a function to repeat many times
 
 ## Simulation example (flight time)
-#### Set up to create a simulation function 
+### Set up to create a simulation function 
 ```{r, echo=TRUE}
 set.seed(202)
 
@@ -87,14 +88,13 @@ corr_trans <- function(rho) rho/(sqrt(1+rho^2))
 corr=corr_trans(-0.75)
 sdint=0.5; sdslope=(0.5/60); sdres=0.1
 ```
-**β0**: intercept; **β_day**: change in flight time for control; **β_daytreat**: additional change in flight time in treatment group
+**β0**: intercept; **β_day**: change in flight time for control; **β_daytreat**: *additional* change in flight time in treatment group
 
 **corr**: correlation between intercepts and slopes. **rho** (-0.75) transformed with corr_trans
 
 **sdint**: standard deviation of intercept; **sdslope**: standard deviation of slope; **sdres**: standard deviation of residual variance 
 
 ## Simulation example continued
-#### Create a simulation function 
 ```{r, echo=TRUE}
 sim <- function(n_per_group, days, β0, β_day, β_daytreat
                 , sdint, sdslope, corr, sdres, ...
@@ -119,40 +119,48 @@ sim <- function(n_per_group, days, β0, β_day, β_daytreat
   return(flight_data) 
 }
 ```
+This creates a data simulation function
+
 
 ## Simulation example continued
-#### Simulate and plot 
+### Simulate once and plot to ensure it looks reasonable
 ```{r, echo=TRUE}
 s1 <- sim(n_per_group=n_per_group, days=days
           , β0=β0, β_day=β_day, β_daytreat=β_daytreat
           , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
+```
+This applies our set parameters to simulate a data set
 
+
+## Simulation example continued
+```{r, echo=FALSE}
 plot_sim <- function(flight_data) {
   ggplot(flight_data, aes(day, flightTime, colour = treatment)) +
     geom_line(aes(group=batID))
 }
-```
-
-## Simulation example continued
-```{r, echo=TRUE}
 plot_sim(s1)
 ```
 
 
 ## Simulation example continued
-#### Wrap in a function to repeat many times
+### Wrap in a function to repeat many times
+Our model:
 ```{r, echo=TRUE}
 form1 <- flightTime ~ 1 + day + treatment:day + (day | batID)
+```
 
+```{r, echo=TRUE}
 fit <- function(flight_data){
-  return(glmmTMB(form1 #specified model
+  return(glmmTMB(form1 
                  , data=flight_data
                  , family = "gaussian"
   ))
 }
 ```
+This creates a model fitting function
+
+
 ## Simulation example continued
-#### Wrap in a function to repeat many times
 ```{r, echo=TRUE}
 simCIs <- function(simfun, fitfun, ...){  
   dat <- simfun(...) 
@@ -164,9 +172,10 @@ simCIs <- function(simfun, fitfun, ...){
   return(tt) 
 }
 ```
+This creates a function that simulates data, models it, and extracts the coefficients and their confidence intervals
+
 
 ## Simulation example continued
-#### Wrap in a function to repeat many times
 ```{r, echo=TRUE}
 nReps <- 1000
 flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight" 
@@ -177,26 +186,32 @@ flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight"
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
   )
 ```
+This applies the simCI function from the previous slide iteratively to simulate data, model it, and extract the coefficients and confidence intervals 1000 times
+
 
 ## Simulation example continued
-#### Examine the data
+### Examine the data
 ```{r, echo=TRUE}
 summary(flightTime)
 ```
 
 ## Simulation example continued
-#### Examine the data
+### Examine the data
 ```{r, echo=TRUE}
 treatmentTrue_flightTime <- β_daytreat
-
+```
+This is the *simulated* (true) value of the parameter we're testing
+```{r, echo=TRUE}
 dt_flight <- (flightTime
               %>% filter(term=="day:treatmentexercise")
               %>% drop_na() 
 )
 ```
+This filters out the rows we are interested in: those where the value in the column term is day:treatmentexercise
+
 
 ## Simulation example continued
-#### Examine the data
+### Examine the data
 ```{r, echo=TRUE}
 dt_flight %>% summarize(
   toohigh=mean(lwr>treatmentTrue_flightTime) 
@@ -205,11 +220,12 @@ dt_flight %>% summarize(
   , power = mean(lwr>0) 
 )
 ```
+This extracts the relavant information regarding the confidence intervals
 
 
 
 ## Visualize the data
-
+### Caterpillar plot
 ```{r, echo = FALSE}
 dt_flight <- (dt_flight
     |> mutate(across(sim_flight, ~ reorder(factor(.), est)))
@@ -232,19 +248,27 @@ print(gg1)
 
 ```
 
-###Simulated mass data
-Very similar procedure because mass is also a continuous response variable
+
+
+##Simulated mass data
+Very similar procedure because mass is also a continuous response variable.
+Our model:
 ```{r, echo = TRUE}
-form1 <- mass ~ 1 + day + treatment:day + (day | batID)
+form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
 ```
 
 ```{r, echo = FALSE}
 mass <- readRDS("bat_mass_sims.RDS")
 β_daytreat_mass=(-1.5/60)
 treatmentTrue_mass <- β_daytreat_mass
+```
+
+
+##Simulated mass data
+```{r, echo = TRUE}
 summary(mass)
 ```
-###Simulated mass data
+
 ```{r, echo = FALSE}
 dt_mass <- (mass
            %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
@@ -258,7 +282,8 @@ dt_mass %>% summarize(
             )
 ```
 
-###Simulated mass data
+##Simulated mass data
+### Caterpillar plot
 ```{r, echo = FALSE}
 dt_mass <- (dt_mass
     |> mutate(across(sim, ~ reorder(factor(.), est)))
@@ -281,6 +306,7 @@ gg2 <- ggplot(dt_mass, aes(sim, est)) +
 
 print(gg2)
 ```
+
 
 
 ## Next steps
