@@ -1,7 +1,7 @@
 ---
 title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
-date: "April 8th 2024"
+date: "April 8th, 2024"
 output:
   ioslides_presentation: default
   beamer_presentation: default
@@ -10,6 +10,17 @@ subtitle: Quantitative Methods in Ecology and Evolution
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
+# Load libraries
+library(glmmTMB)
+library(dplyr)
+library(purrr)
+library(broom.mixed)
+library(tidyverse)
+
+if (packageVersion("broom.mixed") < "0.2.9.5") {
+    warning("please install the latest version of broom.mixed via remotes::install_github('bbolker/broom.mixed')")
+}
 ```
 
 ## Introduction
@@ -26,45 +37,140 @@ bats become them more willing and able to fly
 
 - Repeated measures study with 30 bats measured every 3 days over 60 days
 
-- Predictor variables
+- **Predictor variables**
     - Mass (grams)
     - Treatment (exercise or no exercise)
-    - Sex (Most are females though)
+    - Sex (most are females though)
 
-- Response variables
+- **Response variables**
     - Flight time
     - Number of "shakes" could be both a predictor for flight time and a response variable
     
 ## Hypothesis and predictions
 
-- Hypothesis: Keeping bats active in captivity ensures better flight ability
-- Predictions: 
+- **Hypothesis:** Keeping bats active in captivity ensures better flight ability
+- **Predictions:** 
     - Exercised bats will need less shakes to fly than non-exercised bats
     - Exercised bats will have longer flight times than non-exercised bats
 
 ## Simulation process
+```{r, echo=TRUE}
+n_per_group=15; days=seq(3, 60, by=3)
+n_groups <- 2
 
-- Add proper code here
-```{r cars, echo = TRUE}
-summary(cars)
+β0=30; β_day=(-3/60); β_daytreat=(-1/60)
+
+form0 <- ~ 1 + day + treatment:day + (day | batID)
+form1 <- mass ~ 1 + day + treatment:day + (day | batID)
+
+corr_trans <- function(rho) rho/(sqrt(1+rho^2))
+sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=1
+n_bats <- n_per_group*n_groups
+```
+
+## Simulation process continued
+```{r, echo=TRUE}
+sim <- function(n_per_group, days, β0, β_day, β_daytreat
+                , sdint, sdslope, corr, sdres, ...
+){
+  batID <- as.factor(1:n_bats) 
+  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group))
+  tdat <- data.frame(batID, treatment)
+  dat1 <- expand.grid(batID=batID, day=days)
+  bat_data <- full_join(dat1, tdat, by="batID")
+  mass_data <- simulate_new( form0,
+                   nsim = 1,
+                   family = "gaussian",
+                   newdata = bat_data,
+                   newparams = list(
+                       beta = c(β0, β_day, β_daytreat) 
+                     , theta = c(log(sdint), log(sdslope), corr)
+                     , betad = log(sdres)))
+     bat_data$mass <- mass_data[[1]]
+     return(bat_data)
+}
 ```
 
 ## Simulation process continued
 
+
+
+
+
 ## Preliminary results
 
-- Add proper plot here
-```{r pressure}
-plot(pressure)
+- Simulated mass over 60 days (1 simulation)
+```{r, eval=TRUE}
+#example from lecture, but for mass----
+set.seed(101)
+
+## BMB: using variable names like β is cute but may not be completely portable
+n_per_group=15; days=seq(3, 60, by=3)
+n_groups <- 2
+
+## BMB: this matches what we talked about better
+β0=30; β_day=(-3/60); β_daytreat=(-1/60)
+
+form0 <- ~ 1 + day + treatment:day + (day | batID)
+form1 <- mass ~ 1 + day + treatment:day + (day | batID)
+
+corr_trans <- function(rho) rho/(sqrt(1+rho^2))
+sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=1
+n_bats <- n_per_group*n_groups
+
+
+## JD: These ...'s aren't the best practice; should figure out more about map
+## BMB: get JD to explain this comment, I don't understand it out of context
+
+sim <- function(n_per_group, days, β0, β_day, β_daytreat
+                , sdint, sdslope, corr, sdres, ...
+){
+  batID <- as.factor(1:n_bats) ## JD: Make this look less like a number with paste()
+  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group))
+  tdat <- data.frame(batID, treatment)
+  dat1 <- expand.grid(batID=batID, day=days)
+  bat_data <- full_join(dat1, tdat, by="batID")
+  mass_data <- simulate_new( form0,
+                   nsim = 1,
+                   family = "gaussian",
+                   newdata = bat_data,
+                   newparams = list(
+                       beta = c(β0, β_day, β_daytreat) 
+                     , theta = c(log(sdint), log(sdslope), corr)
+                     , betad = log(sdres) #making this smaller makes variation smaller
+      )
+    )
+
+     bat_data$mass <- mass_data[[1]]
+     return(bat_data)
+}
+    
+
+s1 <- sim(n_per_group = 15, days=seq(3, 60, by=3)
+  , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
+
+plot_sim <- function(bat_data) {
+    ggplot(bat_data, aes(day, mass, colour = treatment)) +
+        geom_line(aes(group=batID))
+}
+plot_sim(s1)
 ```
 
 ## Preliminary results continued
 
-- Add plot here
+```{r}
+cis <- readRDS("bat_mass_sims.RDS")
+β_daytreat=(-1/60)
 
+summary(cis)
+```
 
 ## Preliminary results continued
 
+```{r}
+
+```
 
 ## Next steps
 
