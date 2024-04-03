@@ -20,8 +20,8 @@ dt_mass <- (mass
 )
 
 dt_mass %>% summarize(
-  toohigh=mean(lwr>treatmentTrue) #proportion of CIs where the lower bound is greater than treatmentTrue 
-  , toolow=mean(upr<treatmentTrue) #proportion of CIs where the upper bound is lower than treatmentTrue 
+  toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
+  , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
   , ci_width=mean(upr-lwr) #mean width of CIs
   , power = mean(upr<0) #proportion of CIs where the lower bound is greater than zero. We are only interested in “power” to detect the true effect direction
 )
@@ -41,8 +41,8 @@ dt_flight <- (flightTime
 )
 
 dt_flight %>% summarize(
-  toohigh=mean(lwr>treatmentTrue) #proportion of CIs where the lower bound is greater than treatmentTrue 
-  , toolow=mean(upr<treatmentTrue) #proportion of CIs where the upper bound is lower than treatmentTrue 
+  toohigh=mean(lwr>treatmentTrue_flightTime) #proportion of CIs where the lower bound is greater than treatmentTrue 
+  , toolow=mean(upr<treatmentTrue_flightTime) #proportion of CIs where the upper bound is lower than treatmentTrue 
   , ci_width=mean(upr-lwr) #mean width of CIs
   , power = mean(lwr>0) #proportion of CIs where the upper bound is lower than zero. We are only interested in “power” to detect the true effect direction
 )
