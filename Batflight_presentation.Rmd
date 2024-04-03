@@ -1,7 +1,7 @@
 ---
 title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
-date: "April 8th, 2024"
+date: "April 8th, 2024 "
 output:
   ioslides_presentation: default
   beamer_presentation: default
