@@ -6,6 +6,7 @@ output:
   ioslides_presentation: default
   beamer_presentation: default
 subtitle: Quantitative Methods in Ecology and Evolution
+
 ---
 
 ```{r setup, include=FALSE}
@@ -26,10 +27,10 @@ if (packageVersion("broom.mixed") < "0.2.9.5") {
 ## Introduction
 
 - Big brown bats (*Eptesicus fuscus*)
-- Held in captivity at McMaster 
+- Captive colony at McMaster University
 - Previously we found they weren't willing/able to fly in captivity
 - Planning a new study to examine whether exercise via treadmill can help captive
-bats become them more willing and able to fly
+bats become more willing and able to fly
 - Don't have data yet as this is an upcoming study
 - Our project aims to simulate and analyze data 
 
@@ -38,125 +39,170 @@ bats become them more willing and able to fly
 - Repeated measures study with 30 bats measured every 3 days over 60 days
 
 - **Predictor variables**
-    - Mass (grams)
+    - Day
     - Treatment (exercise or no exercise)
-    - Sex (most are females though)
 
 - **Response variables**
-    - Flight time
-    - Number of "shakes" could be both a predictor for flight time and a response variable
+    - Mass (grams)
+    - Flight time (s): flight ability
+    - Number of "shakes" needed for bat to take off: flight willingness
     
 ## Hypothesis and predictions
 
-- **Hypothesis:** Keeping bats active in captivity ensures better flight ability
-- **Predictions:** 
-    - Exercised bats will need less shakes to fly than non-exercised bats
+- **Hypothesis:** Exercise improves bat flight ability/willingness
+- **Specific Predictions:** 
     - Exercised bats will have longer flight times than non-exercised bats
+    - Exercised bats will need less shakes to fly than non-exercised bats
 
 ## Simulation process
+- Choose parameters
+- Simulate data using these parameters and ensure they seem reasonable 
+- Wrap in a function to repeat many times
+
+## Simulation example (flight time)
+#### Set up to create a simulation function 
 ```{r, echo=TRUE}
-n_per_group=15; days=seq(3, 60, by=3)
+set.seed(202)
+
+n_per_group=15; days=seq(0, 60, by=3) 
 n_groups <- 2
-
-β0=30; β_day=(-3/60); β_daytreat=(-1/60)
-
-form0 <- ~ 1 + day + treatment:day + (day | batID)
-form1 <- mass ~ 1 + day + treatment:day + (day | batID)
-
-corr_trans <- function(rho) rho/(sqrt(1+rho^2))
-sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=1
 n_bats <- n_per_group*n_groups
 ```
 
-## Simulation process continued
+
+## Simulation example continued
+```{r, echo=TRUE}
+form0 <- ~ 1 + day + treatment:day + (day | batID)
+```
+**1**: intercept; **day**: the effect of day on flight time; 
+
+**treatment:day**: interaction (the effect of day on flight time varies depending on treatment level)
+
+**(day | batID)**: random effects (allows for individual variability in the intercept and slope of the relationship between day and flight time among different bats)
+
+## Simulation example continued
+```{r, echo=TRUE}
+β0=2; β_day=(0.5/60); β_daytreat=(2/60) 
+corr_trans <- function(rho) rho/(sqrt(1+rho^2))
+corr=corr_trans(-0.75)
+sdint=0.5; sdslope=(0.5/60); sdres=0.1
+```
+**β0**: intercept; **β_day**: change in flight time for control; **β_daytreat**: additional change in flight time in treatment group
+
+**corr**: correlation between intercepts and slopes. **rho** (-0.75) transformed with corr_trans
+
+**sdint**: standard deviation of intercept; **sdslope**: standard deviation of slope; **sdres**: standard deviation of residual variance 
+
+## Simulation example continued
+#### Create a simulation function 
 ```{r, echo=TRUE}
 sim <- function(n_per_group, days, β0, β_day, β_daytreat
                 , sdint, sdslope, corr, sdres, ...
 ){
   batID <- as.factor(1:n_bats) 
-  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group))
-  tdat <- data.frame(batID, treatment)
-  dat1 <- expand.grid(batID=batID, day=days)
-  bat_data <- full_join(dat1, tdat, by="batID")
-  mass_data <- simulate_new( form0,
-                   nsim = 1,
-                   family = "gaussian",
-                   newdata = bat_data,
-                   newparams = list(
-                       beta = c(β0, β_day, β_daytreat) 
-                     , theta = c(log(sdint), log(sdslope), corr)
-                     , betad = log(sdres)))
-     bat_data$mass <- mass_data[[1]]
-     return(bat_data)
+  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group)) 
+  tdat <- data.frame(batID, treatment) 
+  dat1 <- expand.grid(batID=batID, day=days) 
+  flight_data <- full_join(dat1, tdat, by="batID") 
+  flightTime <- simulate_new(form0, 
+                            nsim = 1,
+                            family = "gaussian", 
+                            newdata = flight_data,
+                            newparams = list(
+                              beta = c(β0, β_day, β_daytreat) 
+                              , theta = c(log(sdint), log(sdslope), corr) 
+                              , betad = log(sdres)
+                            )
+  )
+  
+  flight_data$flightTime <- flightTime[[1]]
+  return(flight_data) 
 }
 ```
 
-## Simulation process continued
+## Simulation example continued
+#### Simulate and plot 
+```{r, echo=TRUE}
+s1 <- sim(n_per_group=n_per_group, days=days
+          , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+          , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
 
-
-
-
-
-## Preliminary results
-
-- Simulated mass over 60 days (1 simulation)
-```{r, eval=TRUE}
-#example from lecture, but for mass----
-set.seed(101)
-
-## BMB: using variable names like β is cute but may not be completely portable
-n_per_group=15; days=seq(3, 60, by=3)
-n_groups <- 2
-
-## BMB: this matches what we talked about better
-β0=30; β_day=(-3/60); β_daytreat=(-1/60)
-
-form0 <- ~ 1 + day + treatment:day + (day | batID)
-form1 <- mass ~ 1 + day + treatment:day + (day | batID)
-
-corr_trans <- function(rho) rho/(sqrt(1+rho^2))
-sdint=5; sdslope=(1/60); corr=corr_trans(-0.75); sdres=1
-n_bats <- n_per_group*n_groups
-
-
-## JD: These ...'s aren't the best practice; should figure out more about map
-## BMB: get JD to explain this comment, I don't understand it out of context
-
-sim <- function(n_per_group, days, β0, β_day, β_daytreat
-                , sdint, sdslope, corr, sdres, ...
-){
-  batID <- as.factor(1:n_bats) ## JD: Make this look less like a number with paste()
-  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group))
-  tdat <- data.frame(batID, treatment)
-  dat1 <- expand.grid(batID=batID, day=days)
-  bat_data <- full_join(dat1, tdat, by="batID")
-  mass_data <- simulate_new( form0,
-                   nsim = 1,
-                   family = "gaussian",
-                   newdata = bat_data,
-                   newparams = list(
-                       beta = c(β0, β_day, β_daytreat) 
-                     , theta = c(log(sdint), log(sdslope), corr)
-                     , betad = log(sdres) #making this smaller makes variation smaller
-      )
-    )
-
-     bat_data$mass <- mass_data[[1]]
-     return(bat_data)
+plot_sim <- function(flight_data) {
+  ggplot(flight_data, aes(day, flightTime, colour = treatment)) +
+    geom_line(aes(group=batID))
 }
-    
+```
 
-s1 <- sim(n_per_group = 15, days=seq(3, 60, by=3)
-  , β0=β0, β_day=β_day, β_daytreat=β_daytreat
-  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
-
-plot_sim <- function(bat_data) {
-    ggplot(bat_data, aes(day, mass, colour = treatment)) +
-        geom_line(aes(group=batID))
-}
+## Simulation example continued
+```{r, echo=TRUE}
 plot_sim(s1)
 ```
+## Simulation example continued
+#### Wrap in a function to repeat many times
+```{r, echo=TRUE}
+form1 <- flightTime ~ 1 + day + treatment:day + (day | batID)
 
+fit <- function(flight_data){
+  return(glmmTMB(form1 #specified model
+                 , data=flight_data
+                 , family = "gaussian"
+  ))
+}
+```
+## Simulation example continued
+#### Wrap in a function to repeat many times
+```{r, echo=TRUE}
+simCIs <- function(simfun, fitfun, ...){  
+  dat <- simfun(...) 
+  fit <- fitfun(dat) 
+  tt <- (tidy(fit, effects = "fixed", conf.int = TRUE) 
+         %>% select(term, est = estimate, lwr = conf.low, upr = conf.high) 
+         %>% mutate(across(where(is.character), factor)) 
+  )
+  return(tt) 
+}
+```
+
+## Simulation example continued
+#### Wrap in a function to repeat many times
+```{r, echo=TRUE}
+nReps <- 1000
+flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight" 
+                 , .progress = interactive() 
+                 , simfun=sim, fitfun=fit 
+                 , n_per_group = n_per_group, days=days 
+                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+                 , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
+  )
+```
+
+## Simulation example continued
+#### Examine the data
+```{r, echo=TRUE}
+summary(flightTime)
+```
+
+## Simulation example continued
+#### Examine the data
+```{r, echo=TRUE}
+treatmentTrue_flightTime <- β_daytreat
+
+dt_flight <- (flightTime
+              %>% filter(term=="day:treatmentexercise")
+              %>% drop_na() 
+)
+```
+
+## Simulation example continued
+#### Examine the data
+```{r, echo=TRUE}
+dt_flight %>% summarize(
+  toohigh=mean(lwr>treatmentTrue_flightTime) 
+  , toolow=mean(upr<treatmentTrue_flightTime) 
+  , ci_width=mean(upr-lwr) 
+  , power = mean(lwr>0) 
+)
+```
 ## Preliminary results continued
 
 ```{r}
@@ -174,7 +220,7 @@ summary(cis)
 
 ## Next steps
 
-- Running the simulation more times
 - Simulation with shakes as count data (Negative binomial or Poisson models)
+- Mass as a predictor variable?
 
 ## Questions?
