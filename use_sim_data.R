@@ -1,4 +1,4 @@
-library(tidyverse)
+library(tidyverse); theme_set(theme_bw())
 library(dplyr)
 
 #file created by "simulate_mass_data.R"
@@ -49,3 +49,29 @@ dt_flight %>% summarize(
   , ci_width=mean(upr-lwr) #mean width of CIs
   , power = mean(lwr>0) #proportion of CIs where the upper bound is lower than zero. We are only interested in “power” to detect the true effect direction
 )
+
+## caterpillar plot
+
+## arrange sims in order of increasing estimate value
+dt_flight <- (dt_flight
+    |> mutate(across(sim_flight, ~ reorder(factor(.), est)))
+)
+
+## https://stackoverflow.com/questions/35090883/remove-all-of-x-axis-labels-in-ggplot
+no_x_axis <- theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
+    geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+    ## blank x axis
+    no_x_axis +
+    ## reference line for coverage (do CIs include true value?)
+    geom_hline(yintercept = β_daytreat_flightTime,
+               colour = "red", linewidth = 2) +
+    ## reference line for power (do CIs include 0?)
+    geom_hline(yintercept = 0,
+               colour = "blue", linewidth = 2) + 
+    expand_limits(x=0)
+
+print(gg1)
