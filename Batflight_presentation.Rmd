@@ -257,6 +257,46 @@ Our model:
 form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
 ```
 
+##Simulated mass data
+```{r, echo = FALSE}
+β0m=30; β_daym=(-3/60); β_daytreatm=(-1.5/60)
+form0m <- ~ 1 + day + treatment:day + (day | batID)
+sdintm=5; sdslopem=(1/60); sdresm=0.5
+
+sim2 <- function(n_per_group, days, β0m, β_daym, β_daytreatm
+                , sdintm, sdslopem, corr, sdresm, ...
+){
+  batID <- as.factor(1:n_bats) #create individual bat IDs ## JD: Make this look less like a number with paste()
+  treatment <- as.factor(rep(c("control", "exercise"), each=n_per_group)) #create treatment groups, 15 per group
+  tdat <- data.frame(batID, treatment) #create data frame with batIDs and treatment groups
+  dat1 <- expand.grid(batID=batID, day=days) #expand so each batID occurs for each day measured 
+  bat_data <- full_join(dat1, tdat, by="batID") #combine to have batID, treatment groups, days
+  mass_data <- simulate_new(form0m, #simulate mass data with gaussian distribution, using set parameters
+                   nsim = 1,
+                   family = "gaussian",
+                   newdata = bat_data,
+                   newparams = list(
+                       beta = c(β0m, β_daym, β_daytreatm) 
+                     , theta = c(log(sdintm), log(sdslopem), corr)
+                     , betad = log(sdresm) 
+      )
+    )
+
+     bat_data$mass <- mass_data[[1]] #assigns simulated mass data to a mass column in bat_data
+     return(bat_data) # allows the modified bat_data object to be used or assigned to a variable outside of the function
+}
+
+s2 <- sim2(n_per_group=n_per_group, days=days
+  , β0m=β0m, β_daym=β_daym, β_daytreatm=β_daytreatm
+  , sdintm=sdintm, sdslopem=sdslopem, corr=corr, sdresm=sdresm)
+
+plot_sim2 <- function(bat_data) {
+    ggplot(bat_data, aes(day, mass, colour = treatment)) +
+        geom_line(aes(group=batID))
+}
+plot_sim2(s2)
+```
+
 ```{r, echo = FALSE}
 mass <- readRDS("bat_mass_sims.RDS")
 β_daytreat_mass=(-1.5/60)
