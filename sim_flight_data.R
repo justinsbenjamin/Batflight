@@ -30,7 +30,7 @@ corr_trans <- function(rho) rho/(sqrt(1+rho^2))
 #correlation between intercepts and slopes
 #we have set rho to -0.75 below, but the calculation is needed to change from -1 and 1 to negative infinity and positive infinity (don't quite get this)
 
-sdint=0.5; sdslope=(0.5/60); corr=corr_trans(-0.75); sdres=0.1
+sdint=0.5; sdslope=(0.5/60); corr=corr_trans(0.75); sdres=0.1
 #thetas, and betad. sdint: standard deviation of intercept (plus/minus 10); sdslope: standard deviation of the slope
 #corr: see above; sdred (betad): standard deviation of residual variance (plus/minus 2), needed because we're simulating a gaussain distribution and we don't just want straight lines 
 #sdint, sdslope and betad are on log scale to ensure they are positive 

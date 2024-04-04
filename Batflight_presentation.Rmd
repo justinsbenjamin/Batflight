@@ -3,10 +3,10 @@ title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
 date: "April 4th, 2024"
 output: html_document
-# output:
-#   ioslides_presentation: default
+#output:
+#  ioslides_presentation: default
 #     #css: customCSS_ioslides.css #didn't work
-#   beamer_presentation: default
+  #beamer_presentation: default
 subtitle: Quantitative Methods in Ecology and Evolution
 ---
 
@@ -51,8 +51,8 @@ bats become more willing and able to fly
     
 ## Hypothesis and predictions
 
-- **Hypothesis:** Exercise improves bat flight ability/willingness
-- **Specific Predictions:** 
+- **Research Question:** Does non-flight exercise improve bat flight ability/willingness in a meaningful way?
+- **Predictions:** 
     - Exercised bats will have longer flight times than non-exercised bats
     - Exercised bats will need less shakes to fly than non-exercised bats
 
@@ -81,18 +81,18 @@ form0 <- ~ 1 + day + treatment:day + (day | batID)
 
 **treatment:day**: interaction (the effect of day on flight time varies depending on treatment level)
 
-**(day | batID)**: random effects (allows for individual variability in the intercept and slope of the relationship between day and flight time among different bats)
+**(day | batID)**: random effects (accounts for correlation among observations within the same levels of "batID", allowing for individual variation in the intercept and slope of the variable "day")
 
 
 ```{r, echo=TRUE}
 β0=2; β_day=(0.5/60); β_daytreat=(2/60) 
 corr_trans <- function(rho) rho/(sqrt(1+rho^2))
-corr=corr_trans(-0.75)
+corr=corr_trans(0.75)
 sdint=0.5; sdslope=(0.5/60); sdres=0.1
 ```
 **β0**: intercept; **β_day**: change in flight time for control; **β_daytreat**: *additional* change in flight time in treatment group
 
-**corr**: correlation between intercepts and slopes. **rho** (-0.75) transformed with corr_trans
+**corr**: correlation between intercepts and slopes. **rho** (0.75) transformed with corr_trans
 
 **sdint**: standard deviation of intercept; **sdslope**: standard deviation of slope; **sdres**: standard deviation of residual variance 
 
@@ -222,7 +222,7 @@ dt_flight %>% summarize(
   , power = mean(lwr>0) 
 )
 ```
-This extracts the relavant information regarding the confidence intervals
+This extracts the relevant information regarding the confidence intervals
 
 
 
@@ -251,13 +251,14 @@ gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
 ```
 
 
-```{r, echo = FALSE}
+```{r, echo = TRUE}
 print(gg1)
 ```
 
 ##Simulated mass data
 
 Very similar procedure because mass is also a continuous response variable.
+
 Our model:
 ```{r, echo = TRUE}
 form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
@@ -265,6 +266,7 @@ form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
 
 
 ```{r, echo = FALSE}
+set.seed(101)
 β0m=30; β_daym=(-3/60); β_daytreatm=(-1.5/60)
 form0m <- ~ 1 + day + treatment:day + (day | batID)
 sdintm=5; sdslopem=(1/60); sdresm=0.5
