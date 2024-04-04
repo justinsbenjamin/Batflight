@@ -2,12 +2,12 @@
 title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
 date: "April 4th, 2024"
-output:
-  ioslides_presentation: default
-    #css: customCSS_ioslides.css #didn't work
-  beamer_presentation: default
+output: html_document
+# output:
+#   ioslides_presentation: default
+#     #css: customCSS_ioslides.css #didn't work
+#   beamer_presentation: default
 subtitle: Quantitative Methods in Ecology and Evolution
-
 ---
 
 ```{r setup, include=FALSE}
@@ -47,6 +47,7 @@ bats become more willing and able to fly
     - Mass (grams)
     - Flight time (s): flight ability
     - Number of "shakes" needed for bat to take off: flight willingness
+
     
 ## Hypothesis and predictions
 
@@ -55,10 +56,12 @@ bats become more willing and able to fly
     - Exercised bats will have longer flight times than non-exercised bats
     - Exercised bats will need less shakes to fly than non-exercised bats
 
+
 ## Simulation process
 - Choose parameters
 - Simulate data using these parameters and ensure they seem reasonable 
 - Wrap in a function to repeat many times
+
 
 ## Simulation example (flight time)
 ### Set up to create a simulation function 
@@ -71,7 +74,6 @@ n_bats <- n_per_group*n_groups
 ```
 
 
-## Simulation example continued
 ```{r, echo=TRUE}
 form0 <- ~ 1 + day + treatment:day + (day | batID)
 ```
@@ -81,7 +83,7 @@ form0 <- ~ 1 + day + treatment:day + (day | batID)
 
 **(day | batID)**: random effects (allows for individual variability in the intercept and slope of the relationship between day and flight time among different bats)
 
-## Simulation example continued
+
 ```{r, echo=TRUE}
 β0=2; β_day=(0.5/60); β_daytreat=(2/60) 
 corr_trans <- function(rho) rho/(sqrt(1+rho^2))
@@ -94,7 +96,7 @@ sdint=0.5; sdslope=(0.5/60); sdres=0.1
 
 **sdint**: standard deviation of intercept; **sdslope**: standard deviation of slope; **sdres**: standard deviation of residual variance 
 
-## Simulation example continued
+
 ```{r, echo=TRUE}
 sim <- function(n_per_group, days, β0, β_day, β_daytreat
                 , sdint, sdslope, corr, sdres, ...
@@ -122,7 +124,7 @@ sim <- function(n_per_group, days, β0, β_day, β_daytreat
 This creates a data simulation function
 
 
-## Simulation example continued
+
 ### Simulate once and plot to ensure it looks reasonable
 ```{r, echo=TRUE}
 s1 <- sim(n_per_group=n_per_group, days=days
@@ -132,7 +134,7 @@ s1 <- sim(n_per_group=n_per_group, days=days
 This applies our set parameters to simulate a data set
 
 
-## Simulation example continued
+
 ```{r, echo=FALSE}
 plot_sim <- function(flight_data) {
   ggplot(flight_data, aes(day, flightTime, colour = treatment)) +
@@ -142,7 +144,7 @@ plot_sim(s1)
 ```
 
 
-## Simulation example continued
+
 ### Wrap in a function to repeat many times
 Our model:
 ```{r, echo=TRUE}
@@ -160,7 +162,7 @@ fit <- function(flight_data){
 This creates a model fitting function
 
 
-## Simulation example continued
+
 ```{r, echo=TRUE}
 simCIs <- function(simfun, fitfun, ...){  
   dat <- simfun(...) 
@@ -175,7 +177,7 @@ simCIs <- function(simfun, fitfun, ...){
 This creates a function that simulates data, models it, and extracts the coefficients and their confidence intervals
 
 
-## Simulation example continued
+
 ```{r, echo=TRUE}
 nReps <- 1000
 flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight" 
@@ -189,18 +191,18 @@ flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight"
 This applies the simCI function from the previous slide iteratively to simulate data, model it, and extract the coefficients and confidence intervals 1000 times
 
 
-## Simulation example continued
+
 ### Examine the data
 ```{r, echo=TRUE}
 summary(flightTime)
 ```
 
-## Simulation example continued
-### Examine the data
+
+
 ```{r, echo=TRUE}
-treatmentTrue_flightTime <- β_daytreat
+treatmentTrue_flightTime <- β_daytreat #(2/60)
 ```
-This is the *simulated* (true) value of the parameter we're testing
+This is the *simulated* (true) value of the parameter we're testing, (i.e. the average *additional* increase in flight time per day [relative to control] in treatment group)
 ```{r, echo=TRUE}
 dt_flight <- (flightTime
               %>% filter(term=="day:treatmentexercise")
@@ -210,8 +212,8 @@ dt_flight <- (flightTime
 This filters out the rows we are interested in: those where the value in the column term is day:treatmentexercise
 
 
-## Simulation example continued
-### Examine the data
+
+
 ```{r, echo=TRUE}
 dt_flight %>% summarize(
   toohigh=mean(lwr>treatmentTrue_flightTime) 
@@ -221,6 +223,7 @@ dt_flight %>% summarize(
 )
 ```
 This extracts the relavant information regarding the confidence intervals
+
 
 
 
@@ -244,20 +247,23 @@ gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
     geom_hline(yintercept = 0,
                colour = "blue", linewidth = 2) + 
     expand_limits(x=0)
-print(gg1)
 
 ```
 
 
+```{r, echo = FALSE}
+print(gg1)
+```
 
 ##Simulated mass data
+
 Very similar procedure because mass is also a continuous response variable.
 Our model:
 ```{r, echo = TRUE}
 form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
 ```
 
-##Simulated mass data
+
 ```{r, echo = FALSE}
 β0m=30; β_daym=(-3/60); β_daytreatm=(-1.5/60)
 form0m <- ~ 1 + day + treatment:day + (day | batID)
@@ -294,6 +300,10 @@ plot_sim2 <- function(bat_data) {
     ggplot(bat_data, aes(day, mass, colour = treatment)) +
         geom_line(aes(group=batID))
 }
+```
+
+
+```{r, echo = TRUE}
 plot_sim2(s2)
 ```
 
@@ -304,25 +314,31 @@ treatmentTrue_mass <- β_daytreat_mass
 ```
 
 
-##Simulated mass data
+
 ```{r, echo = TRUE}
 summary(mass)
 ```
+
 
 ```{r, echo = FALSE}
 dt_mass <- (mass
            %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
            %>% drop_na() #removes rows missing values
 )
+```
+
+
+```{r, echo = TRUE}
+
 dt_mass %>% summarize(
-                toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
-              , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
-              , ci_width=mean(upr-lwr) #mean width of CIs
-              , power = mean(upr<0) #proportion of CIs where the lower bound is greater than zero. We are only interested in “power” to detect the true effect direction
+                toohigh=mean(lwr>treatmentTrue_mass) 
+              , toolow=mean(upr<treatmentTrue_mass)
+              , ci_width=mean(upr-lwr) 
+              , power = mean(upr<0)
             )
 ```
 
-##Simulated mass data
+
 ### Caterpillar plot
 ```{r, echo = FALSE}
 dt_mass <- (dt_mass
@@ -344,9 +360,12 @@ gg2 <- ggplot(dt_mass, aes(sim, est)) +
                colour = "blue", linewidth = 2) + 
     expand_limits(x=0)
 
-print(gg2)
 ```
 
+
+```{r, echo = TRUE}
+print(gg2)
+```
 
 
 ## Next steps
@@ -355,4 +374,6 @@ print(gg2)
 - Mass as a predictor variable?
 - Analyses
 
+
 ## Questions?
+
