@@ -67,7 +67,7 @@ summ <- (sim_res_comb
     |> map_dfr(get_binCI)
 )
 
-ggplot(summ, aes(est, interaction(method, term), colour = ci_type, shape = ci_type)) +
+ggplot(summ, aes(est, interaction(method, term), colour = ci_type)) +
     geom_pointrange(aes(xmin = lwr, xmax = upr), position = position_dodge(width = 0.25)) +
     facet_wrap(~side, ncol = 1) +
     geom_vline(xintercept = 0.025, lty = 2)
