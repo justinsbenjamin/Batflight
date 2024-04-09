@@ -56,7 +56,6 @@ gg1 <- ggplot(dt_mass, aes(sim, est)) +
 print(gg1)
 
 #flight sim data----
-flightTime <- readRDS("bat_flight_sims.RDS")
 β_daytreat_flightTime=(2/60)
 
 summary(flightTime)
