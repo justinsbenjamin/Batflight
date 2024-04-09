@@ -77,3 +77,30 @@ ggplot(summ, aes(est, interaction(method, term), colour = ci_type)) +
     geom_pointrange(aes(xmin = lwr, xmax = upr), position = position_dodge(width = 0.25)) +
     facet_wrap(~side, ncol = 1) +
     geom_vline(xintercept = 0.025, lty = 2)
+
+#if use wald, the binomial ci ...
+#points should be line, but all are above (the 2.5). reml is not converging/available for profile
+#maybe profile CIs are okay.
+#maybe a little suspicious that all are a little high, but maybe not too suspicious bc CIs cross lines.
+
+#should check with lm
+
+#reml missing: doesn't work for technical reasons
+#a priori, don't necessarily expect reml to be better 
+
+#reml vs ml: main diff is in actually how it estimates random effects variances. 
+  #analogy: when calc variance from data, calc sum of sqares, and usually divide by n-1 (instead of n), bc you don't know true mean of dist that came from, just your est of the mean. est never equal to true mean
+  #plugging in est of mean in calc of variance: don't know mu so calc observed mean instead. can figure out how over confident you are in est compared to mu, so divide by n-1. 
+  #basically what reml is doing (calc random effects variances, not assuming we got all the fixed right)
+  #ml is equivalent to dividing by N, not n-1, ignoring problem
+
+#code is too clever. competing urges: like to be compact, but also understandable.
+#try this with lm example, then don't have ml vs reml. this data reaction is days, leave out subjects. or sim new, simpler data and try lm. this should be basically perfect if do lm
+
+
+#probably should be using profile CI, but don't need to worry about reml (can use ml). reml intercept actually bigger 
+
+
+#for the flight data: leave out batid, do sim and fit with lm, should work perfectly
+
+
