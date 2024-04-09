@@ -2,11 +2,9 @@
 title: "Bat Flight Simulation"
 author: "Justin Benjamin & Renata Soljmosi"
 date: "April 4th, 2024"
-output: html_document
-#output:
-#  ioslides_presentation: default
-#     #css: customCSS_ioslides.css #didn't work
-  #beamer_presentation: default
+output:
+  pdf_document: default
+  html_document: default
 subtitle: Quantitative Methods in Ecology and Evolution
 ---
 
@@ -85,12 +83,12 @@ form0 <- ~ 1 + day + treatment:day + (day | batID)
 
 
 ```{r, echo=TRUE}
-β0=2; β_day=(0.5/60); β_daytreat=(2/60) 
+beta0=2; beta_day=(0.5/60); beta_daytreat=(2/60) 
 corr_trans <- function(rho) rho/(sqrt(1+rho^2))
 corr=corr_trans(0.75)
 sdint=0.5; sdslope=(0.5/60); sdres=0.1
 ```
-**β0**: intercept; **β_day**: change in flight time for control; **β_daytreat**: *additional* change in flight time in treatment group
+**beta0**: intercept; **beta_day**: change in flight time for control; **beta_daytreat**: *additional* change in flight time in treatment group
 
 **corr**: correlation between intercepts and slopes. **rho** (0.75) transformed with corr_trans
 
@@ -98,7 +96,7 @@ sdint=0.5; sdslope=(0.5/60); sdres=0.1
 
 
 ```{r, echo=TRUE}
-sim <- function(n_per_group, days, β0, β_day, β_daytreat
+sim <- function(n_per_group, days, beta0, beta_day, beta_daytreat
                 , sdint, sdslope, corr, sdres, ...
 ){
   batID <- as.factor(1:n_bats) 
@@ -111,7 +109,7 @@ sim <- function(n_per_group, days, β0, β_day, β_daytreat
                             family = "gaussian", 
                             newdata = flight_data,
                             newparams = list(
-                              beta = c(β0, β_day, β_daytreat) 
+                              beta = c(beta0, beta_day, beta_daytreat) 
                               , theta = c(log(sdint), log(sdslope), corr) 
                               , betad = log(sdres)
                             )
@@ -128,7 +126,7 @@ This creates a data simulation function
 ### Simulate once and plot to ensure it looks reasonable
 ```{r, echo=TRUE}
 s1 <- sim(n_per_group=n_per_group, days=days
-          , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+          , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
           , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
 ```
 This applies our set parameters to simulate a data set
@@ -184,7 +182,7 @@ flightTime <- map_dfr(1:nReps, simCIs, .id="sim_flight"
                  , .progress = interactive() 
                  , simfun=sim, fitfun=fit 
                  , n_per_group = n_per_group, days=days 
-                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+                 , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
   )
 ```
@@ -200,7 +198,7 @@ summary(flightTime)
 
 
 ```{r, echo=TRUE}
-treatmentTrue_flightTime <- β_daytreat #(2/60)
+treatmentTrue_flightTime <- beta_daytreat #(2/60)
 ```
 This is the *simulated* (true) value of the parameter we're testing, (i.e. the average *additional* increase in flight time per day [relative to control] in treatment group)
 ```{r, echo=TRUE}
@@ -241,7 +239,7 @@ gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
     ## blank x axis
     no_x_axis +
     ## reference line for coverage (do CIs include true value?)
-    geom_hline(yintercept = β_daytreat,
+    geom_hline(yintercept = beta_daytreat,
                colour = "red", linewidth = 2) +
     ## reference line for power (do CIs include 0?)
     geom_hline(yintercept = 0,
@@ -267,11 +265,11 @@ form1_m <- mass ~ 1 + day + treatment:day + (day | batID)
 
 ```{r, echo = FALSE}
 set.seed(101)
-β0m=30; β_daym=(-3/60); β_daytreatm=(-1.5/60)
+beta0m=30; beta_daym=(-3/60); beta_daytreatm=(-1.5/60)
 form0m <- ~ 1 + day + treatment:day + (day | batID)
 sdintm=5; sdslopem=(1/60); sdresm=0.5
 
-sim2 <- function(n_per_group, days, β0m, β_daym, β_daytreatm
+sim2 <- function(n_per_group, days, beta0m, beta_daym, beta_daytreatm
                 , sdintm, sdslopem, corr, sdresm, ...
 ){
   batID <- as.factor(1:n_bats) #create individual bat IDs ## JD: Make this look less like a number with paste()
@@ -284,7 +282,7 @@ sim2 <- function(n_per_group, days, β0m, β_daym, β_daytreatm
                    family = "gaussian",
                    newdata = bat_data,
                    newparams = list(
-                       beta = c(β0m, β_daym, β_daytreatm) 
+                       beta = c(beta0m, beta_daym, beta_daytreatm) 
                      , theta = c(log(sdintm), log(sdslopem), corr)
                      , betad = log(sdresm) 
       )
@@ -295,7 +293,7 @@ sim2 <- function(n_per_group, days, β0m, β_daym, β_daytreatm
 }
 
 s2 <- sim2(n_per_group=n_per_group, days=days
-  , β0m=β0m, β_daym=β_daym, β_daytreatm=β_daytreatm
+  , beta0m=beta0m, beta_daym=beta_daym, beta_daytreatm=beta_daytreatm
   , sdintm=sdintm, sdslopem=sdslopem, corr=corr, sdresm=sdresm)
 
 plot_sim2 <- function(bat_data) {
@@ -311,8 +309,8 @@ plot_sim2(s2)
 
 ```{r, echo = FALSE}
 mass <- readRDS("bat_mass_sims.RDS")
-β_daytreat_mass=(-1.5/60)
-treatmentTrue_mass <- β_daytreat_mass
+beta_daytreat_mass=(-1.5/60)
+treatmentTrue_mass <- beta_daytreat_mass
 ```
 
 
@@ -355,7 +353,7 @@ gg2 <- ggplot(dt_mass, aes(sim, est)) +
     ## blank x axis
     no_x_axis +
     ## reference line for coverage (do CIs include true value?)
-    geom_hline(yintercept = β_daytreat_mass,
+    geom_hline(yintercept = beta_daytreat_mass,
                colour = "red", linewidth = 2) +
     ## reference line for power (do CIs include 0?)
     geom_hline(yintercept = 0,
