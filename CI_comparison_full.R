@@ -11,15 +11,17 @@ set.seed(101)
 
 data("sleepstudy", package = "lme4")
 m1 <- glmmTMB(Reaction ~ Days + (Days | Subject), sleepstudy)
-m2 <- update(m1, REML = TRUE)
+m2 <- update(m1, REML = TRUE) 
+
+
 
 ## we'll treat the fitted values as *true* values for simulations
 true_vals <- tidy(m1, effects = "fixed") |> select(term, true_val = estimate)
-
+#RS: the coefficient estimates?
 
 
 simfun <- function(i, method = c("ML", "REML"), ...) {
-    ## first arg is ignored (index from map)
+    ## first arg is ignored (index from map) 
     method <- match.arg(method)
     ci_types <- c("profile", "wald")
     if (method == "REML") ci_types <- "wald"
@@ -34,6 +36,10 @@ simfun <- function(i, method = c("ML", "REML"), ...) {
     )
     return(res)
 }
+#ML: Maximum likelihood, aims to find the parameter values that make observed data most probable under assumed statistical model, doesn't account for estimation of fixed effects when estimating variance components in mixed-effects models
+#REML: Restricted Maximum Likelihood, used for estimating parameters of a mixed-effects model, aims to maximize the likelihood of the data conditional on the fixed effects, effectively removing the bias introduced by estimating fixed effects when estimating the variance components
+#Profile CI: Maximizes the likelihood function over  parameter space, while holding other parameters at fixed values, particularly useful for nonlinear or complex models
+#Wald CI: Constructed using asymptotic normality of the parameter estimates, based on  assumption that  parameter estimates follow a normal distribution with mean equal to the maximum likelihood estimate and variance equal to inverse of the Fisher information matrix, simpler to compute and  used for large sample sizes or when the likelihood surface is approximately symmetric
 
 ## could do this in yet another map() call, or a for loop, but things are getting a little complicated ...
 sim_res <- map_dfr(seq(nsim), simfun, .id = "sim",
@@ -44,7 +50,7 @@ sim_res_REML <- map_dfr(seq(nsim), ~simfun(., method = "REML"), .id = "sim",
 
 sim_res_comb <- bind_rows(sim_res, sim_res_REML)
 
-saveRDS(sim_res_comb.rds, file = "CI_comparison_full.rds")
+saveRDS(sim_res_comb, file = "CI_comparison_full.rds")
 
 get_binCI <- function(dat) {
     get_vals <- function(x) {
