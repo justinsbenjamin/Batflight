@@ -10,12 +10,12 @@ flightTime <- readRDS("bat_flight_sims.RDS")
 ## BMB: this should probably be retrieved from an earlier stored
 ##  value, so we don't risk it getting out of sync
 ## (possibly stored in a 'true_val' column?)
-β_daytreat_mass=(-1.5/60)
+beta_daytreat_mass=(-1.5/60)
 
 summary(mass)#In an earlier version there were some NAs for lwr and upr, but seems okay now
 
 ## BMB: *simulated* (true) value of the parameter we're testing
-treatmentTrue_mass <- β_daytreat_mass #average *additional* loss per day (relative to control) in treatment group
+treatmentTrue_mass <- beta_daytreat_mass #average *additional* loss per day (relative to control) in treatment group
 
 dt_mass <- (mass
            %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
@@ -46,7 +46,7 @@ gg1 <- ggplot(dt_mass, aes(sim, est)) +
   ## blank x axis
   no_x_axis +
   ## reference line for coverage (do CIs include true value?)
-  geom_hline(yintercept = β_daytreat_mass,
+  geom_hline(yintercept = beta_daytreat_mass,
              colour = "red", linewidth = 2) +
   ## reference line for power (do CIs include 0?)
   geom_hline(yintercept = 0,
@@ -56,12 +56,12 @@ gg1 <- ggplot(dt_mass, aes(sim, est)) +
 print(gg1)
 
 #flight sim data----
-β_daytreat_flightTime=(2/60)
+beta_daytreat_flightTime=(2/60)
 
 summary(flightTime)
 
 ## BMB: *simulated* (true) value of the parameter we're testing
-treatmentTrue_flightTime <- β_daytreat_flightTime #average *additional* loss per day (relative to control) in treatment group
+treatmentTrue_flightTime <- beta_daytreat_flightTime #average *additional* loss per day (relative to control) in treatment group
 
 dt_flight <- (flightTime
               %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
@@ -92,7 +92,7 @@ gg2 <- ggplot(dt_flight, aes(sim_flight, est)) +
     ## blank x axis
     no_x_axis +
     ## reference line for coverage (do CIs include true value?)
-    geom_hline(yintercept = β_daytreat_flightTime,
+    geom_hline(yintercept = beta_daytreat_flightTime,
                colour = "red", linewidth = 2) +
     ## reference line for power (do CIs include 0?)
     geom_hline(yintercept = 0,

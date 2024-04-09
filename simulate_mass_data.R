@@ -15,9 +15,9 @@ n_per_group=15; days=seq(0, 60, by=3) #seq(first day, last day, step size)
 n_groups <- 2
 
 #set parameters
-β0=30; β_day=(-3/60); β_daytreat=(-1.5/60)
-#betas. β0: initial mass in g; β_day: slope (average loss (g per day) in control group)
-#β_daytreat: average *additional* loss per day (relative to control) in treatment group
+beta0=30; beta_day=(-3/60); beta_daytreat=(-1.5/60)
+#betas. beta0: initial mass in g; beta_day: slope (average loss (g per day) in control group)
+#beta_daytreat: average *additional* loss per day (relative to control) in treatment group
 
 #model
 form0 <- ~ 1 + day + treatment:day + (day | batID)
@@ -42,7 +42,7 @@ n_bats <- n_per_group*n_groups
 
 
 #create simulation function
-sim <- function(n_per_group, days, β0, β_day, β_daytreat
+sim <- function(n_per_group, days, beta0, beta_day, beta_daytreat
                 , sdint, sdslope, corr, sdres, ...
 ){
   batID <- as.factor(1:n_bats) #create individual bat IDs ## JD: Make this look less like a number with paste()
@@ -55,7 +55,7 @@ sim <- function(n_per_group, days, β0, β_day, β_daytreat
                    family = "gaussian",
                    newdata = bat_data,
                    newparams = list(
-                       beta = c(β0, β_day, β_daytreat) 
+                       beta = c(beta0, beta_day, beta_daytreat) 
                      , theta = c(log(sdint), log(sdslope), corr)
                      , betad = log(sdres) 
       )
@@ -67,7 +67,7 @@ sim <- function(n_per_group, days, β0, β_day, β_daytreat
     
 #simulate once and plot to ensure the simulated output looks reasonable
 s1 <- sim(n_per_group=n_per_group, days=days
-  , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+  , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
   , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
 
 plot_sim <- function(bat_data) {
@@ -103,7 +103,7 @@ simCIs <- function(simfun, fitfun, ...){ #takes 2 arguments (one that simulates 
 #Print estimates, lower CI bounds, and upper CI bounds 
 print(simCIs(simfun=sim, fitfun=fit#Call simCI function, apply sim and fit functions,
            , n_per_group=n_per_group, days=days #apply set parameters
-           , β0=β0, β_day=β_day, β_daytreat=β_daytreat
+           , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
            , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
 ))
 
@@ -121,7 +121,7 @@ system.time(
                  , .progress = interactive() #progress bar
                  , simfun=sim, fitfun=fit #functions fit to simCIs
                  , n_per_group = n_per_group, days=days #parameters fit to simCIs
-                 , β0=β0, β_day=β_day, β_daytreat=β_daytreat#these parameters are fit into simfunin simCIs with ... above
+                 , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat#these parameters are fit into simfunin simCIs with ... above
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
                    )
 )
