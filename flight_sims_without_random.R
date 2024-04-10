@@ -3,6 +3,7 @@ library(dplyr)
 library(purrr)
 library(broom.mixed)
 library(tidyverse)
+library(ggplot2); theme_set(theme_bw())
 
 set.seed(303)
 
@@ -56,7 +57,7 @@ fit <- function(flight_data_nore){
   ))
 }
 
-simCIs <- function(simfun, fitfun, ...){ 
+simCIslm <- function(simfun, fitfun, ...){ 
   dat <- simfun(...) 
   fit <- fitfun(dat) 
   tt <- (tidy(fit, effects = "fixed", conf.int = TRUE) 
@@ -67,16 +68,16 @@ simCIs <- function(simfun, fitfun, ...){
 }
 
 
-print(simCIs(simfun=sim, fitfun=fit
+print(simCIslm(simfun=sim, fitfun=fit
              , n_per_group=n_per_group, days=days
              , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
-             ,sdres=sdres
+             , sdres=sdres
 ))
 
 nReps <- 1000
 
 system.time(
-  cis <- map_dfr(1:nReps, simCIs, .id="sim_flight" 
+  cis <- map_dfr(1:nReps, simCIslm, .id="sim_flight" 
                  , .progress = interactive() 
                  , simfun=sim, fitfun=fit 
                  , n_per_group = n_per_group, days=days 
@@ -120,5 +121,4 @@ gg1 <- ggplot(dt_flight, aes(sim_flight, est)) +
   expand_limits(x=0)
 
 print(gg1)
-
 
