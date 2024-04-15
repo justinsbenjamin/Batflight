@@ -6,7 +6,7 @@ library(ggplot2); theme_set(theme_bw())
 
 ## could use lower conf.level, would require fewer sims, but I'm concerned
 ## that it would also lessen the observed phenomenon
-nsim <- 500
+nsim <- 5000
 set.seed(101)
 
 data("sleepstudy", package = "lme4")

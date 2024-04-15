@@ -74,7 +74,7 @@ print(simCIslm(simfun=sim, fitfun=fit
              , sdres=sdres
 ))
 
-nReps <- 1000
+nReps <- 4000
 
 system.time(
   cis <- map_dfr(1:nReps, simCIslm, .id="sim_flight" 
