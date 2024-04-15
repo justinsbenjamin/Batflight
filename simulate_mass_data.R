@@ -15,7 +15,7 @@ n_per_group=15; days=seq(0, 60, by=3) #seq(first day, last day, step size)
 n_groups <- 2
 
 #set parameters
-beta0=30; beta_day=(-3/60); beta_daytreat=(-1.5/60)
+beta0=30; beta_day=(-2.5/60); beta_daytreat=(-1/60)
 #betas. beta0: initial mass in g; beta_day: slope (average loss (g per day) in control group)
 #beta_daytreat: average *additional* loss per day (relative to control) in treatment group
 
