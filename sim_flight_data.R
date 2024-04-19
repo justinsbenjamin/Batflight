@@ -3,6 +3,7 @@ library(dplyr)
 library(purrr)
 library(broom.mixed)
 library(tidyverse)
+library(ggplot2); theme_set(theme_bw())
 
 # if (packageVersion("broom.mixed") < "0.2.9.5") {
 #     warning("please install the latest version of broom.mixed via remotes::install_github('bbolker/broom.mixed')")

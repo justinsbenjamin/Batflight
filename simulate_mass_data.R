@@ -3,6 +3,7 @@ library(dplyr)
 library(purrr)
 library(broom.mixed)
 library(tidyverse)
+library(ggplot2); theme_set(theme_bw())
 
 # if (packageVersion("broom.mixed") < "0.2.9.5") {
 #     warning("please install the latest version of broom.mixed via remotes::install_github('bbolker/broom.mixed')")
@@ -15,7 +16,7 @@ n_per_group=15; days=seq(0, 60, by=3) #seq(first day, last day, step size)
 n_groups <- 2
 
 #set parameters
-beta0=30; beta_day=(-2.5/60); beta_daytreat=(-1/60)
+beta0=30; beta_day=(-1/60); beta_daytreat=(-2/60)
 #betas. beta0: initial mass in g; beta_day: slope (average loss (g per day) in control group)
 #beta_daytreat: average *additional* loss per day (relative to control) in treatment group
 
