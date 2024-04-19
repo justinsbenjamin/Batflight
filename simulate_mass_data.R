@@ -16,7 +16,7 @@ n_per_group=15; days=seq(0, 60, by=3) #seq(first day, last day, step size)
 n_groups <- 2
 
 #set parameters
-beta0=30; beta_day=(-1/60); beta_daytreat=(-2/60)
+beta0=30; beta_day=(-1.5/60); beta_daytreat=(-3/60)
 #betas. beta0: initial mass in g; beta_day: slope (average loss (g per day) in control group)
 #beta_daytreat: average *additional* loss per day (relative to control) in treatment group
 
@@ -77,7 +77,22 @@ plot_sim <- function(bat_data) {
 }
 plot_sim(s1)
 
-##stop here and check plot
+#percent difference
+wide_s1 <- pivot_wider(s1, 
+                       names_from = day,  
+                       values_from = mass)
+
+first_values <- wide_s1[, 3]  # Assuming the first variable starts from column 2
+last_values <- wide_s1[, ncol(wide_s1)] 
+
+percent_difference <- ( 1 - (last_values / first_values) ) *100
+
+wide_s1 <- (wide_s1 %>% left_join(percent_difference, by = "60")
+      %>% mutate(percent_differences= percent_difference))
+
+print(percent_difference)
+
+#I can't figure out how to do this
 
 #create fit function for model and return fitted model object 
 fit <- function(bat_data){
