@@ -17,11 +17,11 @@ meaningful_mass_fasting <- ggplot()  +
   theme(axis.title.y =element_blank(),axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
   scale_x_continuous(limits = c(-5, 5), breaks = seq(-5,5,1)) +
   ylab("") + xlab("Change in Mass (g)")  +
-  geom_vline(xintercept = -5, linetype = "dashed") + geom_rect(aes(xmin = -5, xmax = -0.5, ymin = 0, ymax = 10), fill = "purple", alpha = 0.5) +
-  geom_vline(xintercept = -0.5, linetype = "dashed") + geom_rect(aes(xmin = -0.1, xmax = -0.5, ymin = 0, ymax = 10), fill = "grey", alpha = 0.5) +
+  geom_vline(xintercept = -5, linetype = "dashed") + geom_rect(aes(xmin = -5, xmax = -1, ymin = 0, ymax = 10), fill = "purple", alpha = 0.5) +
+  geom_vline(xintercept = -1, linetype = "dashed") + geom_rect(aes(xmin = -0.1, xmax = -1, ymin = 0, ymax = 10), fill = "grey", alpha = 0.5) +
   geom_vline(xintercept = -0.1, linetype = "dashed") + geom_rect(aes(xmin = -0.1, xmax = 5, ymin = 0, ymax = 10), fill = "blue", alpha = 0.5) + 
-  annotate("text", x = -2.75, y = 8, label = "Judged to be of practical \n or meaningful biological \n relevance") +
-  annotate("text", x = -0.3, y = 8, label = "Grey\nArea") +
+  annotate("text", x = -3, y = 8, label = "Judged to be of practical \n or meaningful biological \n relevance") +
+  annotate("text", x = -0.55, y = 8, label = "Grey\nArea") +
   annotate("text", x = 2.5, y = 8, label = "Judged to not be of practical \n or meaningful biological \n relevance") 
 
 meaningful_mass_fasting
