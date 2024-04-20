@@ -77,7 +77,22 @@ plot_sim <- function(flight_data) {
 }
 plot_sim(s1)
 
-##stop here and check plot
+#percent difference
+wide_s1 <- pivot_wider(s1, 
+                       names_from = day,  
+                       values_from = flightTime)
+
+first_values <- wide_s1[, 3]  # Assuming the first variable starts from column 2
+last_values <- wide_s1[, ncol(wide_s1)] 
+
+percent_difference <- ( 1 - (last_values / first_values) ) *100
+
+wide_s1 <- (wide_s1 %>% left_join(percent_difference, by = "60")
+            %>% mutate(percent_differences= percent_difference))
+
+print(percent_difference)
+
+#idk
 
 #create fit function for model and return fitted model object 
 fit <- function(flight_data){

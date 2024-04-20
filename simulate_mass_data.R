@@ -77,6 +77,9 @@ plot_sim <- function(bat_data) {
 }
 plot_sim(s1)
 
+saveRDS(s1, "mass_dataset.RDS")
+
+
 #percent difference
 wide_s1 <- pivot_wider(s1, 
                        names_from = day,  
@@ -102,13 +105,14 @@ fit <- function(bat_data){
   ))
 }
 
+
 ## BMB: could speed up by combining simfun and fitfun, using
 ## nsim = nsim ...
 #create function that simulates data, models it, and extracts coefficients and CIs
 simCIs <- function(simfun, fitfun, ...){ #takes 2 arguments (one that simulates data, one that fits a model to the simulated data)
   dat <- simfun(...) #simulates data, ... allows passing additional arguments to simfun if needed
   fit <- fitfun(dat) #fits model 
-  tt <- (tidy(fit, effects = "fixed", conf.int = TRUE) #extracts the model coefficients and their confidence intervals
+  tt <- (tidy(fit, effects = "fixed", conf.int = TRUE, conf.method = "profile") #extracts the model coefficients and their confidence intervals
       %>% select(term, est = estimate, lwr = conf.low, upr = conf.high) #selects specific columns: coefficient names (term), estimates (estimate), lower CI bounds (conf.low), and upper CI bounds (conf.high)
       %>% mutate(across(where(is.character), factor)) #converts character columns to factors (for downstream analyses, plotting)
   )
@@ -124,7 +128,7 @@ print(simCIs(simfun=sim, fitfun=fit#Call simCI function, apply sim and fit funct
 ))
 
 #how many reps of the simulation we want
-nReps <- 1000
+nReps_1000 <- 1000
 
 ## BMB: for slow stuff it is probably better to take apart the pieces
 ## (1) generate a big list of fitted objects
@@ -133,7 +137,7 @@ nReps <- 1000
 
 #apply the simCIs function iteratively to simulate data, fit models, and calculate confidence intervals, save dataframe as cis
 system.time(
-    cis <- map_dfr(1:nReps, simCIs, .id="sim" #iterates over 1000 reps (set above), applying simCIs for each iteration. adds "sim" column for simulation number
+    cis_1000 <- map_dfr(1:nReps_1000, simCIs, .id="sim" #iterates over 1000 reps (set above), applying simCIs for each iteration. adds "sim" column for simulation number
                  , .progress = interactive() #progress bar
                  , simfun=sim, fitfun=fit #functions fit to simCIs
                  , n_per_group = n_per_group, days=days #parameters fit to simCIs
@@ -141,12 +145,22 @@ system.time(
                  , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
                    )
 )
-## BMB: about 6 minutes for 1000 reps on my laptop
-## (could make faster by parallelizing etc., but adds complexity)
-
-saveRDS(cis, "bat_mass_sims.RDS")
+  
+nReps_2500 <- 2500
 
 
+system.time(
+  cis_2500 <- map_dfr(1:nReps_2500, simCIs, .id="sim" #iterates over 1000 reps (set above), applying simCIs for each iteration. adds "sim" column for simulation number
+                      , .progress = interactive() #progress bar
+                      , simfun=sim, fitfun=fit #functions fit to simCIs
+                      , n_per_group = n_per_group, days=days #parameters fit to simCIs
+                      , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat#these parameters are fit into simfunin simCIs with ... above
+                      , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
+  )
+)
+saveRDS(cis_1000, "bat_mass_sims_1000.RDS")
+
+saveRDS(cis_2500, "bat_mass_sims_2500.RDS")
 
 
 
