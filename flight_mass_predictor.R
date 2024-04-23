@@ -74,7 +74,7 @@ s1 <- sim(n_per_group=n_per_group, days=days
           , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
 
 plot_sim <- function(flight_data) {
-  ggplot(flight_data, aes(day, flightTime, colour = treatment)) +
+  ggplot(flight_data, aes(day, mass, colour = treatment)) +
     geom_line(aes(group=batID))
 }
 plot_sim(s1)
