@@ -6,7 +6,7 @@ library(tidyverse)
 library(ggplot2); theme_set(theme_bw())
 library(lme4)
 
-set.seed(202)
+set.seed(606)
 
 n_per_group=15; days=seq(0, 60, by=3) 
 n_groups <- 2
@@ -68,9 +68,7 @@ s_poisson <- sim_count_poisson(n_per_group=n_per_group, days=days,
 # Plot the simulated count data
 plot_count_sim <- function(count_data) {
   ggplot(count_data, aes(day, shakes, colour = treatment)) +
-    geom_line(aes(group=batID)) +
-    ggtitle("Simulated Shake Count Data (Poisson)") +
-    ylab("Shake Count") + xlab("Day")
+    geom_line(aes(group=batID)) 
 }
 
 plot_count_sim(s_poisson)
@@ -79,20 +77,20 @@ plot_count_sim(s_poisson)
 
 
 #percent difference
-wide_poisson <- pivot_wider(s_poisson, 
-                            names_from = day,  
-                            values_from = shakes)
-
-first_values <- wide_poisson[, 3]  # Assuming the first variable starts from column 2
-last_values <- wide_poisson[, ncol(wide_poisson)] 
-
-percent_difference <- ( 1 - (last_values / first_values) ) *100
-
-wide_poisson <- (wide_poisson %>% left_join(percent_difference, by = "60")
-                 %>% mutate(percent_differences= percent_difference))
-
-print(percent_difference)
-
+# wide_poisson <- pivot_wider(s_poisson, 
+#                             names_from = day,  
+#                             values_from = shakes)
+# 
+# first_values <- wide_poisson[, 3]  # Assuming the first variable starts from column 2
+# last_values <- wide_poisson[, ncol(wide_poisson)] 
+# 
+# percent_difference <- ( 1 - (last_values / first_values) ) *100
+# 
+# wide_poisson <- (wide_poisson %>% left_join(percent_difference, by = "60")
+#                  %>% mutate(percent_differences= percent_difference))
+# 
+# print(percent_difference)
+# 
 
 #create fit function for model and return fitted model object 
 fit <- function(count_data){
