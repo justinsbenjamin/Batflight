@@ -9,29 +9,32 @@ library(ggplot2); theme_set(theme_bw())
 #     warning("please install the latest version of broom.mixed via remotes::install_github('bbolker/broom.mixed')")
 # }
 
-#mass <- readRDS("mass_dataset.RDS")
 
-set.seed(404) #because this will probably just give me an error
+mass_sims <- readRDS("mass_dataset.RDS")
 
-n_per_group=15; days=seq(0, 60, by=3) #seq(first day, last day, step size)
+set.seed(404) 
+
+
+n_per_group=15; days=seq(0, 60, by=3) 
 n_groups <- 2
 
-#set parameters
+#flight time parameters
 beta0_f=2; beta_day_f=(0.5/60); beta_daytreat_f=(2/60)
-
-#model
-form0 <- ~ 1 + day + treatment:day + (day | batID)
-form1 <- flightTime ~ 1 + day + treatment:day + mass + mass:day + mass:treatment + (day | batID) #interaction between mass and treatment, mass and day????
-
 corr_trans <- function(rho) rho/(sqrt(1+rho^2))
-
 sdint_f=0.5; sdslope_f=(0.5/60); corr=corr_trans(0.75); sdres_f=0.1
 
-n_bats <- n_per_group*n_groups
 
-#set parameters
-beta0=30; beta_day=(-1.5/60); beta_daytreat=(-3/60)
-sdint=5; sdslope=(1/60); sdres=0.5
+#mass parameters
+beta0_m=30; beta_day_m=(-1.5/60); beta_daytreat_m=(-3/60)
+sdint_m=5; sdslope_m=(1/60); sdres_m=0.5
+
+form0 <- ~ 1 + day + treatment:day + (day | batID)
+form1 <- flightTime ~ 1 + day + mass + day:treatment + mass:treatment + mass:day + mass:day:treatment + (day | batID) #this looks v complicated lol
+form2 <- flightTime ~ 1 + day + mass + day:treatment +  (day | batID) #?
+form3 <- flightTime ~ 1 + day + mass + day:treatment + mass:day:treatment + (day | batID) #?
+
+
+n_bats <- n_per_group*n_groups
 
 
 #create simulation function
@@ -58,9 +61,9 @@ sim <- function(n_per_group, days, beta0, beta_day, beta_daytreat
                        family = "gaussian",
                        newdata = flight_data,
                        newparams = list(
-                         beta = c(beta0, beta_day, beta_daytreat) 
-                         , theta = c(log(sdint), log(sdslope), corr)
-                         , betad = log(sdres) 
+                         beta = c(beta0_m, beta_day_m, beta_daytreat_m) 
+                         , theta = c(log(sdint_m), log(sdslope_m), corr)
+                         , betad = log(sdres_m) 
                        )
   )
   flight_data$flightTime <- flightTime[[1]]
@@ -73,11 +76,17 @@ s1 <- sim(n_per_group=n_per_group, days=days
           , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
           , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres)
 
-plot_sim <- function(flight_data) {
+plot_sim_flight <- function(flight_data) {
+  ggplot(flight_data, aes(day, flightTime, colour = treatment)) +
+    geom_line(aes(group=batID))
+}
+plot_sim_flight(s1)
+
+plot_sim_mass <- function(flight_data) {
   ggplot(flight_data, aes(day, mass, colour = treatment)) +
     geom_line(aes(group=batID))
 }
-plot_sim(s1)
+plot_sim_mass(s1)
 
 fit <- function(flight_data){
   return(glmmTMB(form1 
@@ -99,63 +108,185 @@ simCIs <- function(simfun, fitfun, ...){
 
 
 print(simCIs(simfun=sim, fitfun=fit
-             , n_per_group=n_per_group, days=days #apply set parameters
+             , n_per_group=n_per_group, days=days 
              , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
              , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
 ))
 
-nReps<- 10
+nReps<- 1000
 
 system.time(
-  cis_1000 <- map_dfr(1:nReps, simCIs, .id="sim" #iterates over 1000 reps (set above), applying simCIs for each iteration. adds "sim" column for simulation number
-                      , .progress = interactive() #progress bar
-                      , simfun=sim, fitfun=fit #functions fit to simCIs
-                      , n_per_group = n_per_group, days=days #parameters fit to simCIs
-                      , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat#these parameters are fit into simfunin simCIs with ... above
+  cis <- map_dfr(1:nReps, simCIs, .id="sim" 
+                      , .progress = interactive() 
+                      , simfun=sim, fitfun=fit 
+                      , n_per_group = n_per_group, days=days 
+                      , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
                       , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
   )
 )
 
-summary(cis_1000)
+summary(cis)
 
-beta_daytreat_mass=(-3/60)
-treatmentTrue_mass <- beta_daytreat_mass #average *additional* loss per day (relative to control) in treatment group
 
-dt_mass_1000 <- (cis_1000
-                 %>% filter(term=="day:treatmentexercise") #retains only rows where the value in the column term is day:treatmentexercise
-                 %>% drop_na() #removes rows missing values
+beta_daytreat_mass=(2/60)
+
+
+treatmentTrue_mass <- beta_daytreat_mass
+
+dt <- (cis
+           %>% filter(term=="day:treatmentexercise") 
+           %>% drop_na() 
 )
 
-dt_mass_1000  %>% summarize(
-  toohigh=mean(lwr>treatmentTrue_mass) #proportion of CIs where the lower bound is greater than treatmentTrue 
-  , toolow=mean(upr<treatmentTrue_mass) #proportion of CIs where the upper bound is lower than treatmentTrue 
-  , ci_width=mean(upr-lwr) #mean width of CIs
-  , power = mean(upr<0) #proportion of CIs where the upper bound is lower than zero. We are only interested in “power” to detect the true effect direction
+dt  %>% summarize(
+  toohigh=mean(lwr>0) 
+  , toolow=mean(upr<0)  
+  , ci_width=mean(upr-lwr) 
 )
 
-## caterpillar plot
-
-## arrange sims in order of increasing estimate value
-dt_mass_1000  <- (dt_mass_1000 
-                  %>% mutate(across(sim, ~ reorder(factor(.), est)))
+dt  <- (dt 
+           %>% mutate(across(sim, ~ reorder(factor(.), est)))
 )
 
-## https://stackoverflow.com/questions/35090883/remove-all-of-x-axis-labels-in-ggplot
 no_x_axis <- theme(axis.title.x=element_blank(),
                    axis.text.x=element_blank(),
                    axis.ticks.x=element_blank())
 
-gg1_1000 <- ggplot(dt_mass_1000 , aes(sim, est)) +
+gg_dt<- ggplot(dt, aes(sim, est)) +
   geom_pointrange(aes(ymin = lwr, ymax = upr)) +
   ## blank x axis
   no_x_axis +
   ## reference line for coverage (do CIs include true value?)
-  geom_hline(yintercept = beta_daytreat_mass,
-             colour = "red", linewidth = 2) +
-  ## reference line for power (do CIs include 0?)
   geom_hline(yintercept = 0,
+             colour = "red", linewidth = 2) +
+  geom_hline(yintercept = treatmentTrue_mass,
              colour = "blue", linewidth = 2) + 
-  expand_limits(x=0)
+  expand_limits(x=0) +
+  ggtitle("day:treatmentexercise")
 
-print(gg1_1000)
+print(gg_dt)
 
+m <- (cis
+       %>% filter(term=="mass") 
+       %>% drop_na() 
+)
+
+m  %>% summarize(
+  toohigh=mean(lwr>0) 
+  , toolow=mean(upr<0)  
+  , ci_width=mean(upr-lwr) 
+)
+
+m  <- (m
+        %>% mutate(across(sim, ~ reorder(factor(.), est)))
+)
+
+gg_m<- ggplot(m, aes(sim, est)) +
+  geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+  ## blank x axis
+  no_x_axis +
+  ## reference line for coverage (do CIs include true value?)
+  geom_hline(yintercept = 0,
+             colour = "red", linewidth = 2) +
+  expand_limits(x=0) +
+  ggtitle("mass")
+
+print(gg_m)
+
+
+mt <- (cis
+      %>% filter(term=="mass:treatmentexercise") 
+      %>% drop_na() 
+)
+
+mt %>% summarize(
+  toohigh=mean(lwr>0) 
+  , toolow=mean(upr<0)  
+  , ci_width=mean(upr-lwr) 
+)
+
+mt <- (mt
+       %>% mutate(across(sim, ~ reorder(factor(.), est)))
+)
+
+gg_mt<- ggplot(mt, aes(sim, est)) +
+  geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+  ## blank x axis
+  no_x_axis +
+  ## reference line for coverage (do CIs include true value?)
+  geom_hline(yintercept = 0,
+             colour = "red", linewidth = 2) +
+  expand_limits(x=0) +
+  ggtitle("mass:treatmentexercise")
+
+print(gg_mt)
+
+dmt <- (cis
+        %>% filter(term=="day:mass:treatmentexercise") 
+        %>% drop_na() 
+)
+
+dmt %>% summarize(
+  toohigh=mean(lwr>0) 
+  , toolow=mean(upr<0)  
+  , ci_width=mean(upr-lwr) 
+)
+
+dmt <- (dmt
+        %>% mutate(across(sim, ~ reorder(factor(.), est)))
+)
+
+gg_dmt<- ggplot(dmt, aes(sim, est)) +
+  geom_pointrange(aes(ymin = lwr, ymax = upr)) +
+  ## blank x axis
+  no_x_axis +
+  ## reference line for coverage (do CIs include true value?)
+  geom_hline(yintercept = 0,
+             colour = "red", linewidth = 2) +
+  expand_limits(x=0) +
+  ggtitle("day:mass:treatmentexercise")
+
+print(gg_dmt)
+
+gg_arranged <- grid.arrange(gg_dt, gg_m, gg_mt, gg_dmt)
+
+#ggsave("mass_predictor_on_flighttime.png", plot = gg_arranged, width = 6, height = 4, dpi = 300)
+
+fit2 <- function(flight_data){
+  return(glmmTMB(form2 
+                 , data=flight_data
+                 , family = "gaussian"
+  ))
+}
+
+
+simCIs2 <- function(simfun, fitfun, ...){ 
+  dat <- simfun(...) 
+  fit <- fitfun(dat) 
+  tt <- (tidy(fit, effects = "fixed", conf.int = TRUE, conf.method = "profile") 
+         %>% select(term, est = estimate, lwr = conf.low, upr = conf.high) 
+         %>% mutate(across(where(is.character), factor)) 
+  )
+  return(tt) 
+}
+
+
+print(simCIs2(simfun=sim, fitfun=fit2
+             , n_per_group=n_per_group, days=days 
+             , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
+             , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
+))
+
+nReps<- 1000
+
+system.time(
+  cis2 <- map_dfr(1:nReps, simCIs2, .id="sim" 
+                 , .progress = interactive() 
+                 , simfun=sim, fitfun=fit 
+                 , n_per_group = n_per_group, days=days 
+                 , beta0=beta0, beta_day=beta_day, beta_daytreat=beta_daytreat
+                 , sdint=sdint, sdslope=sdslope, corr=corr, sdres=sdres
+  )
+)
+
+summary(cis2)
