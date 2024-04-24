@@ -158,7 +158,7 @@ system.time(
 
 saveRDS(cis_1000, "bat_flight_sims_1000.RDS")
 
-saveRDS(cis_2500, "bat_flight_sims_4000.RDS")
+saveRDS(cis_2500, "bat_flight_sims_2500.RDS")
 
 
 

@@ -122,4 +122,4 @@ gg1 <- ggplot(dt_mass, aes(sim_mass, est)) +
 
 print(gg1)
 
-#ggsave("flighttime_CIs_no_random.png", plot = gg1, width = 6, height = 4, dpi = 300)
+#ggsave("mass_CIs_no_random.png", plot = gg1, width = 6, height = 4, dpi = 300)

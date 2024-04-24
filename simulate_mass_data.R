@@ -77,7 +77,7 @@ plot_sim <- function(bat_data) {
 }
 plot_sim(s1)
 
-saveRDS(s1, "mass_dataset.RDS")
+#saveRDS(s1, "mass_dataset.RDS")
 
 
 #percent difference
