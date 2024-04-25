@@ -36,7 +36,7 @@ If you have any suggestions on how to help us simulate "semi-random" data that w
 
 **Final Writeup**
 
-Scripts used:
+Scripts from Batfrlight repo used in final writeup:
 
 Meaningful Effects
 Mass: `BoMm_figure.R`
@@ -44,8 +44,8 @@ Flight time: `BoMm_figure.R`
 
 Data Simulation
 
-Mass generalized linear model: `simulate_mass_data.R`
-Flight generalized linear model: `sim_flight_data.R`
+Mass generalized linear model: `simulate_mass_data.R` *Need to run before analyzing*
+Flight generalized linear model: `sim_flight_data.R` *Need to run before analyzing*
 Mass linear model: `mass_sims_without_random.R`
 Flight time linear model: `flight_sims_without_random.R`
 Shakes attempt: `Shakes.R`
