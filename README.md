@@ -32,3 +32,38 @@ I have also been thinking about the measures for flight willingness (i.e. time t
 If you have any suggestions on how to help us simulate "semi-random" data that would be nice. Different bats will have different weights, personalities etc which each make them separate. I'm trying to find a way to use randomly generated data but keeping each bat kind of personalized. Like the weight of a particular bat won't change much from 1 measurement to the next but it may change a fair amount over the course of the study. Or for the flight times and number of shakes necessary to get them to fly some bats will be stubborn and not fly or fly very little and others might fly a bit more so randomizing flight times can throw off that data. Thanks!
 
 [[There are a lot of assumptions you can make... it should be relatively simple to simulate weights (see JD's simulation code); harder is thinking about how you want to simulate connectons between different variables.
+
+
+**Final Writeup**
+
+Scripts from Batfrlight repo used in final writeup:
+
+**Meaningful Effects Plots**
+
+Mass: `BoMm_figure.R`
+
+Flight time: `BoMm_figure.R`
+
+**Data Simulation**
+
+Mass generalized linear model: `simulate_mass_data.R` *Need to run before analyzing*
+
+Flight generalized linear model: `sim_flight_data.R` *Need to run before analyzing*
+
+Mass linear model: `mass_sims_without_random.R`
+
+Flight time linear model: `flight_sims_without_random.R`
+
+Shakes attempt: `Shakes.R`
+
+Mass as a predictor of flight time attempt: `flight_mass_predictor.R`
+
+**Data Analysis**
+
+Mass generalized linear model: `use_sim_data.R`
+
+Flight generalized linear model: `use_sim_data.R`
+
+Mass linear model: `mass_sims_without_random.R`
+
+Flight time linear model: `flight_sims_without_random.R`
