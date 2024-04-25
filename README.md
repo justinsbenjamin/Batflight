@@ -38,7 +38,7 @@ If you have any suggestions on how to help us simulate "semi-random" data that w
 
 Scripts from Batfrlight repo used in final writeup:
 
-**Meaningful Effects**
+**Meaningful Effects Plots**
 
 Mass: `BoMm_figure.R`
 
