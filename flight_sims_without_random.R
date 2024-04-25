@@ -89,6 +89,9 @@ system.time(
 
 summary(cis)
 
+saveRDS(cis, "flighttime_without_random.RDS")
+
+
 treatmentTrue_flightTime <- beta_daytreat 
 
 dt_flight <- (cis

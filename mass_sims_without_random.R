@@ -89,6 +89,9 @@ system.time(
 
 summary(cis)
 
+saveRDS(cis, "bat_mass_without_random.RDS")
+
+
 treatmentTrue_mass<- beta_daytreat 
 
 dt_mass <- (cis
